@@ -1,0 +1,22 @@
+# Secrets
+.env
+
+# Confidential screenplay material must never enter this repository.
+inputs/
+private/
+outputs/
+*.zip
+!sample_input/synthetic_show.zip
+
+# Private notes for the candidate, not part of the published project
+INTERVIEW_PREP.md
+WALKTHROUGH_SCRIPT.md
+
+# Python and tooling
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.streamlit/secrets.toml
+.claude/
+.DS_Store

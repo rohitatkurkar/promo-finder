@@ -1,0 +1,7 @@
+[server]
+# Only this computer can open the app, because uploaded scripts are confidential.
+address = "localhost"
+headless = true
+
+[browser]
+gatherUsageStats = false
