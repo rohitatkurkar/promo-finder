@@ -47,7 +47,6 @@ from .prompts import (
     FINALIST_VERSION,
     FINDER_VERSION,
     HOOK_VERSION,
-    build_outline,
 )
 from .ranking import Scored, rank_with_variety, remove_duplicates
 from .worksheets import write_review_sheet
@@ -362,7 +361,7 @@ def run_ai_pipeline(
     elif stopped_because is None and passing:
         script_hash = "".join(sorted(episode.content_hash[:8] for episode in episodes))
         try:
-            finalist_reviews, finalist_issues = review_finalists(passing, title, build_outline(episodes), evaluator, script_hash)
+            finalist_reviews, finalist_issues = review_finalists(passing, title, episodes, evaluator, script_hash)
             write_json(finalist_path, {"clip_keys": passing_keys, "reviews": finalist_reviews, "issues": finalist_issues})
         except LLMError as error:
             finalist_issues = [{"where": "finalist_review", "kind": error.kind, "detail": evaluator.redact(error.detail)}]

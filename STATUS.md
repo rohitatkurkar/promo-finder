@@ -2,7 +2,9 @@
 
 The one master status document. Update this file instead of starting new lists.
 
-Last updated: 2026-11-08, after the Windows audit (branch `windows-audit`, not yet committed).
+Last updated: 2026-11-08, after the finalist outline privacy fix (branch `windows-audit`, local only, never pushed).
+
+Decisions so far: provider is the **Groq free plan** (finder `openai/gpt-oss-120b`, evaluator `qwen/qwen3.8-27b`), with **Cloudflare Workers AI free** as a possible fallback. Budget is ₹0: no paid APIs, no payment method on any account. No key is configured and no screenplay text has been sent anywhere yet.
 
 Labels: **Done and tested** · **Implemented but unverified** · **Experiment** · **Blocked** · **Not being built**
 
@@ -35,7 +37,7 @@ There is no `.env` file, so no API key is configured.
 - `llama-cpp-python` and other native model packages: not used anywhere in this prototype. Only `pyarrow`, `numpy` and `pandas` (through Streamlit) have native parts, and all installed as ready made Windows wheels.
 
 ### Tests
-- **Done and tested.** `.venv\Scripts\python.exe -m pytest`: **186 passed, 0 failed, 0 skipped, 0 warnings** in about 14 seconds. That is the original 185 plus 1 new regression test. Before any change, the original 185 also all passed on Windows (Python 3.11.7, first environment tried).
+- **Done and tested.** `.venv\Scripts\python.exe -m pytest`: **186 passed, 0 failed, 0 skipped, 0 warnings** in about 14 seconds after the audit. That is the original 185 plus 1 new regression test. After the outline fix (section 4a): **190 passed, 0 failed, 0 skipped.** Before any change, the original 185 also all passed on Windows (Python 3.11.7, first environment tried).
 
 ### Basic baseline
 - **Done and tested.** `run.py basic` on the real pack, twice, on Python 3.14:
@@ -97,11 +99,23 @@ One `LLMClient` speaks the OpenAI compatible chat API. Provider, model and key c
 
 Before the first real run, the user should know:
 - **Blocked:** no `.env` and no key. The default models in `.env.example` (Groq, `openai/gpt-oss-120b` finder, `qwen/qwen3.8-27b` evaluator) have not been checked against the provider's current list or data terms.
-- A one episode run still sends **all 50 episode loglines** to the provider, because the finalist review's outline uses the whole pack (`pipeline.py`, `build_outline(episodes)`).
+- ~~A one episode run still sends all 50 episode loglines to the provider.~~ Fixed, see section 4a.
 - Structured output is plain JSON mode (`response_format: json_object`). Valid cue IDs are not enforced by the provider; Python rejects bad ones afterwards.
 - Raw replies are kept only in the cache, and only when they parsed. A reply that was not valid JSON is not saved anywhere. The cache defaults to `llm_cache` beside the run folder and is shared across runs, so pass `--cache-dir` inside the run folder to keep one run's replies together.
 - The cache key ignores the API key and base URL path, but includes provider host, model, temperature, seed and output limit.
 - The gates are strict: both hook and ending must be rated 4 of 5. On a weak or cautious model, few or no clips may pass.
+
+## 4a. Finalist outline privacy fix (2026-11-08)
+
+**Done and tested** (stand-in provider only, no real model).
+
+- **Problem:** the finalist review always received all 50 episode summaries, even for a one episode trial, because `pipeline.py` built the outline from the whole pack.
+- **Change:** `prompts.build_outline(episodes, up_to_episode)` now includes only Episode 1 up to `up_to_episode`. `ai_mode.review_finalists` builds it separately for each batch of up to 8 clips, up to the latest episode among that batch's clips. When later episodes are left out, the outline ends with a note saying it stops there and the story continues, so the reviewer does not read the last summary shown as the ending. `FINALIST_VERSION` is now `finalist_v2`, so run settings and caches record the change.
+- **Effect:** an Episode 1 trial sends 1 summary instead of 50. A batch whose latest clip is from Episode N sends N summaries. A full 50 episode run still sends most summaries, because a batch reviewing late clips needs the story up to that point.
+- **Trade-off:** the reviewer can no longer see a turn that later episodes reverse or pay off, so it cannot judge, for example, "this looks like a big reveal but is undone in Episode 40". A clip only contains events up to its own episode, so judging what it gives away about the story so far, and premise fit, is unaffected.
+- **Wording not changed:** `FINALIST_SYSTEM` still says the reviewer knows "the full story outline". The closing note in the outline corrects this. Rewording the prompt was not approved, so it stays.
+- **Tests:** 4 new tests in `tests/test_ai_pipeline.py`. They cover the outline function, an Episode 1 trial (only E1 sent), a later episode trial (Episode 2: E1 and E2 sent, E3 not), and separate batches (batch [E1, E3] gets E1 to E3, batch [E2] gets E1 and E2). All 4 failed before the change and pass after it.
+- **Other stages unchanged, checked:** on the sample show with the stand-in provider, every finder, hook test and cold viewer request was byte identical before and after, and so were the final promos. The full run's finalist request was also identical, because its batch reached the last episode. Basic mode on the real pack is still byte identical to the archive (`promos.json`, `promos.csv`, `data_quality.json`).
 
 ## 5. Two segment promos
 
@@ -131,7 +145,7 @@ Missing:
 
 ## 7. Next step
 
-Awaiting approval: choose and check a provider (data terms, model availability, JSON mode), create `.env` locally, run `check-provider`, then run AI mode on one episode only, into a new run folder with its own cache.
+Provider chosen (Groq free plan). Awaiting the user: create a Groq account with no payment method, turn on Zero Data Retention in Data Controls, note the limits shown in the console, create a key and put it in a local `.env` (never in chat), leaving the price lines blank. Then run `check-provider`, which sends no screenplay text, and run AI mode on one episode only (Episode 1 sends the least), into a new run folder with its own cache.
 
 ## 8. Later (agreed scope, not started)
 

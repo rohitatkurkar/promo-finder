@@ -391,3 +391,68 @@ def test_evaluate_clip_rejects_invented_evidence():
     assert evaluation["verified_evidence"] == []
     assert any(issue["kind"] == "invented_evidence" for issue in evaluation["issues"])
     assert "cold_viewer_failed" in gate_failures(evaluation)
+
+
+# The finalist review sees episode summaries only up to the latest episode it is reviewing.
+
+def _finalist_prompts(provider):
+    from promo_finder.prompts import FINALIST_SYSTEM
+    return [request["body"]["messages"][1]["content"] for request in provider.requests
+            if request["body"]["messages"][0]["content"] == FINALIST_SYSTEM]
+
+
+def _outline_episodes(prompt):
+    return [int(number) for number in re.findall(r"^E(\d+): ", prompt, flags=re.MULTILINE)]
+
+
+def test_build_outline_stops_at_the_requested_episode(sample_zip):
+    from promo_finder.prompts import build_outline
+    episodes, _ = load_pack(sample_zip)
+    first = build_outline(episodes, 1)
+    assert _outline_episodes(first) == [1]
+    assert episodes[1].logline not in first and episodes[2].logline not in first
+    assert "stops at Episode 1" in first
+    whole = build_outline(episodes, 3)
+    assert _outline_episodes(whole) == [1, 2, 3]
+    assert "stops at" not in whole  # Nothing was left out, so no note.
+
+
+def test_episode_one_trial_sends_only_the_first_summary(sample_zip, tmp_path):
+    provider = FakeProvider()
+    summary = run(sample_zip, tmp_path, provider, only_episodes={1})
+    episodes, _ = load_pack(sample_zip)
+    prompts = _finalist_prompts(provider)
+    assert summary["passed_all_gates"] > 0 and prompts
+    for prompt in prompts:
+        assert _outline_episodes(prompt) == [1]
+        assert episodes[1].logline not in prompt and episodes[2].logline not in prompt
+
+
+def test_later_episode_trial_sends_summaries_up_to_that_episode_only(sample_zip, tmp_path):
+    provider = FakeProvider()
+    run(sample_zip, tmp_path, provider, only_episodes={2})
+    episodes, _ = load_pack(sample_zip)
+    prompts = _finalist_prompts(provider)
+    assert prompts
+    for prompt in prompts:
+        assert _outline_episodes(prompt) == [1, 2]
+        assert episodes[2].logline not in prompt
+        assert "stops at Episode 2" in prompt
+
+
+def test_each_finalist_batch_sees_summaries_up_to_its_own_latest_episode(sample_zip, monkeypatch):
+    from promo_finder import ai_mode
+    from promo_finder.boundaries import Clip
+    episodes, _ = load_pack(sample_zip)
+    by_number = {episode.number: episode for episode in episodes}
+    clips = [(Clip(number, 0.0, 30.0, f"E{number:02d}_C0001", f"E{number:02d}_C0009", f"E{number:02d}_C0001",
+                   f"E{number:02d}_C0009", 0.0), by_number[number]) for number in (1, 3, 2)]
+    monkeypatch.setattr(ai_mode, "FINALIST_BATCH", 2)  # Batches: [E1, E3] then [E2].
+    provider = FakeProvider()
+    client = LLMClient(ModelConfig("evaluator", "https://x.test/v1", "m", "k", requests_per_minute=0, tokens_per_minute=0),
+                       transport=provider, sleep=lambda _: None)
+    reviews, issues = ai_mode.review_finalists(clips, "Show", episodes, client, "hash")
+    prompts = _finalist_prompts(provider)
+    assert [_outline_episodes(prompt) for prompt in prompts] == [[1, 2, 3], [1, 2]]
+    assert episodes[2].logline not in prompts[1]
+    assert set(reviews) == {clip.key for clip, _ in clips} and issues == []

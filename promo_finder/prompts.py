@@ -20,7 +20,7 @@ from .parser import ACTION, DIALOGUE, Cue, Episode
 FINDER_VERSION = "finder_v1"
 HOOK_VERSION = "hook_v1"
 COLD_VIEWER_VERSION = "cold_viewer_v1"
-FINALIST_VERSION = "finalist_v1"
+FINALIST_VERSION = "finalist_v2"  # v2: outline only up to the latest episode in each batch
 
 FINDER_SYSTEM = (
     "You help a promo editor at a short drama company. Promos are short clips posted on Instagram, TikTok and "
@@ -167,8 +167,20 @@ def build_cold_viewer_prompt(rows: str) -> str:
     return COLD_VIEWER_TEMPLATE.format(rows=rows)
 
 
-def build_outline(episodes: list[Episode]) -> str:
-    return "\n".join(f"E{episode.number}: {episode.logline}" for episode in episodes)
+def build_outline(episodes: list[Episode], up_to_episode: int) -> str:
+    """Episode summaries from the start of the show up to and including `up_to_episode`.
+
+    A clip can only show events up to its own episode, so later summaries are not needed to
+    judge what it gives away, and leaving them out sends less of the story to the provider.
+    The cost: the reviewer cannot see a turn that later episodes reverse or pay off.
+    The closing note stops the reviewer reading the last summary shown as the end of the story.
+    """
+    shown = sorted((episode for episode in episodes if episode.number <= up_to_episode), key=lambda e: e.number)
+    lines = [f"E{episode.number}: {episode.logline}" for episode in shown]
+    if any(episode.number > up_to_episode for episode in episodes):
+        lines.append(f"(The outline stops at Episode {up_to_episode}. The story continues after it, "
+                     "but later episodes are deliberately not shown.)")
+    return "\n".join(lines)
 
 
 def build_finalist_prompt(title: str, outline: str, clips_text: str) -> str:

@@ -41,6 +41,7 @@ from .prompts import (
     build_finalist_prompt,
     build_finder_prompt,
     build_hook_prompt,
+    build_outline,
 )
 from .ranking import SPOILER_PENALTY, Scored, are_duplicates
 from .signals import continuity_signal, duration_signal
@@ -341,13 +342,17 @@ def score_evaluated_clip(clip: Clip, episode: Episode, evaluation: dict, finalis
 
 
 def review_finalists(
-    clips: list[tuple[Clip, Episode]], title: str, outline: str, client: LLMClient, script_hash: str
+    clips: list[tuple[Clip, Episode]], title: str, episodes: list[Episode], client: LLMClient, script_hash: str
 ) -> tuple[dict[str, dict], list[dict]]:
-    """Spoiler, premise and ad risk review, using the full story outline."""
+    """Spoiler, premise and ad risk review, using the story outline.
+
+    Each batch sees summaries only up to the latest episode among its own clips.
+    """
     reviews: dict[str, dict] = {}
     issues: list[ModelIssue] = []
     for position in range(0, len(clips), FINALIST_BATCH):
         batch = clips[position:position + FINALIST_BATCH]
+        outline = build_outline(episodes, max(clip.episode for clip, _ in batch))
         blocks = []
         for clip, episode in batch:
             lines = [f"{cue.text}" for cue in cues_in_range(episode, clip.start, clip.end) if cue.kind == DIALOGUE]
