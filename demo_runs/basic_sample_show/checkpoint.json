@@ -1,0 +1,18 @@
+{
+  "episodes": {
+    "1": {
+      "hash": "bad7b2ac377ebbce3934437c29e12241a7a58bbfe606ecc8e1ab1f845f317089",
+      "status": "done"
+    },
+    "2": {
+      "hash": "9ce37ec9e79577fd188b0c54820fceae7c516c95e286b6a1fd346a63ea7d4052",
+      "status": "done"
+    },
+    "3": {
+      "hash": "4d91c9491f0f4a97cf2b09f11fac81e4905d3244c38ffe5b542ba83eacb493bc",
+      "status": "done"
+    }
+  },
+  "engine_version": "basic_v3",
+  "processing_seconds": 0.1
+}

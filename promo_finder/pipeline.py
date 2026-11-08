@@ -189,9 +189,13 @@ def _write_outputs(run_dir: Path, title: str, promos: list, summary: dict) -> No
 
 def load_clients(run_dir: Path, env_path: str | Path | None, use_cache: bool, cache_dir: str | Path | None,
                  finder_model: str | None = None, evaluator_model: str | None = None,
-                 transport=None, sleep=None) -> tuple[LLMClient, LLMClient, UsageLedger]:
-    """Keys come only from the .env file, never from the wider shell environment."""
-    env = {key: value for key, value in dotenv_values(env_path or DEFAULT_ENV).items() if value is not None}
+                 transport=None, sleep=None, env_values: dict | None = None) -> tuple[LLMClient, LLMClient, UsageLedger]:
+    """Keys come only from the .env file, or from settings the caller passes in (the interface's
+    hosted secrets), never from the wider shell environment."""
+    if env_values is not None:
+        env = {key: value for key, value in env_values.items() if value is not None}
+    else:
+        env = {key: value for key, value in dotenv_values(env_path or DEFAULT_ENV).items() if value is not None}
     finder_config = load_model_config("finder", env, finder_model)
     evaluator_config = load_model_config("evaluator", env, evaluator_model)
     ledger = UsageLedger(run_dir / "usage.jsonl")
@@ -221,8 +225,12 @@ def run_ai_pipeline(
     transport=None,
     sleep=None,
     on_progress=None,
+    env_values: dict | None = None,
 ) -> dict:
-    """AI assisted mode. Raises nothing for a single bad episode: it records the failure and continues."""
+    """AI assisted mode. Raises nothing for a single bad episode: it records the failure and continues.
+
+    env_values, when given, replaces reading the .env file (used for hosted secrets).
+    """
     run_dir = Path(out_dir)
     for folder in ("episodes", "evaluations"):
         (run_dir / folder).mkdir(parents=True, exist_ok=True)
@@ -236,7 +244,8 @@ def run_ai_pipeline(
     title = pack_title(input_path)
     selected = [episode for episode in episodes if not only_episodes or episode.number in only_episodes]
 
-    finder, evaluator, ledger = load_clients(run_dir, env_path, use_cache, cache_dir, finder_model, evaluator_model, transport, sleep)
+    finder, evaluator, ledger = load_clients(run_dir, env_path, use_cache, cache_dir, finder_model, evaluator_model, transport, sleep,
+                                             env_values)
     finder._check_ready()
     evaluator._check_ready()
 

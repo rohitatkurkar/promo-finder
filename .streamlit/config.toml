@@ -1,7 +1,8 @@
 [server]
-# Only this computer can open the app, because uploaded scripts are confidential.
-address = "localhost"
 headless = true
+# The server address is not fixed here, so the app also runs on hosts such as Streamlit Community Cloud.
+# On your own computer, keep it private to this machine by starting it with:
+#   streamlit run app.py --server.address localhost
 
 [browser]
 gatherUsageStats = false

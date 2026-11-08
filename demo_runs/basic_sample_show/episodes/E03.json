@@ -1,0 +1,79 @@
+{
+  "episode": 3,
+  "pairs_tried": 63,
+  "valid_clips": 7,
+  "rejection_counts": {
+    "duration_out_of_range": 51,
+    "too_short": 4,
+    "hook_starts_mid_sentence": 1,
+    "below_a_required_floor": 1
+  },
+  "kept": [
+    {
+      "clip": {
+        "episode": 3,
+        "start": 9.5,
+        "end": 39.0,
+        "start_cue_id": "E03_C0005",
+        "end_cue_id": "E03_C0013",
+        "hook_cue_id": "E03_C0005",
+        "ending_cue_id": "E03_C0013",
+        "hook_offset": 0.0,
+        "adjustments": [],
+        "warnings": []
+      },
+      "parts": {
+        "hook": 63.0,
+        "ending": 82.0,
+        "understanding": 95.0,
+        "key_moment": 71.4,
+        "emotion": 61.6,
+        "continuity": 100.0,
+        "duration": 100.0
+      },
+      "penalties": {
+        "late_story_position": 10.0
+      },
+      "payload": {
+        "hook_reasons": [
+          "script marks the delivery as intense",
+          "threat, accusation or reveal wording",
+          "high stakes wording",
+          "opening line leans on earlier context",
+          "answers a question the viewer did not hear",
+          "the script shows this moment landing on someone"
+        ],
+        "ending_reasons": [
+          "the episode's own final beat",
+          "script marks the final line as intense",
+          "final line threatens or reveals",
+          "final line carries high stakes"
+        ],
+        "understanding_reasons": [
+          "relationship words spoken: aunt, brother, family",
+          "stakes spoken: alive, gallows, hang, stole"
+        ],
+        "emotion_reasons": [
+          "fast back and forth",
+          "intense delivery throughout"
+        ],
+        "continuity_reasons": [
+          "one scene"
+        ],
+        "key_moment_reasons": [
+          "covers the episode's main event"
+        ],
+        "ad_warnings": []
+      },
+      "weights": {
+        "hook": 0.25,
+        "ending": 0.25,
+        "understanding": 0.15,
+        "key_moment": 0.1,
+        "emotion": 0.1,
+        "continuity": 0.05,
+        "duration": 0.1
+      }
+    }
+  ]
+}

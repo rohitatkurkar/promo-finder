@@ -12,9 +12,11 @@ from pathlib import Path
 import pandas as pd
 import streamlit as st
 
+from dotenv import dotenv_values
 from pydantic import ValidationError
 
 from promo_finder.boundaries import cues_in_range
+from promo_finder.hosting import ai_access, has_api_key, max_episodes, merge_settings, parse_episode_selection
 from promo_finder.llm_client import LLMError
 from promo_finder.parser import ACTION, CAMERA, DIALOGUE, ScreenplayPackError, format_timestamp, load_pack
 from promo_finder.pipeline import DEFAULT_ENV, pack_title, run_ai_pipeline, run_basic_pipeline
@@ -34,6 +36,10 @@ ROOT = Path(__file__).resolve().parent
 OUTPUT_ROOT = Path(os.environ.get("PROMO_OUTPUT_DIR", ROOT / "outputs"))
 # Optional: a folder holding the screenplay packs, so a run's transcript can be shown without uploading the pack again.
 PACK_DIR = os.environ.get("PROMO_PACK_DIR")
+# The local settings file. Tests point this elsewhere so they never read a real key.
+ENV_FILE = Path(os.environ.get("PROMO_ENV_FILE", DEFAULT_ENV))
+# Precomputed results on the invented sample show, shipped with the app so it has something to show at once.
+DEMO_ROOT = ROOT / "demo_runs"
 SAMPLE = ROOT / "sample_input" / "synthetic_show.zip"
 KIND_ICON = {DIALOGUE: "Line", ACTION: "Action", CAMERA: "Shot"}
 RATING_FIELDS = [
@@ -49,19 +55,25 @@ st.title("Promo Finder")
 st.caption("Reads a microdrama screenplay and recommends 20 to 60 second promo clips. All times come from the screenplay's own cues.")
 
 
-def key_is_configured() -> bool:
-    if not DEFAULT_ENV.exists():
-        return False
-    from dotenv import dotenv_values
+def load_settings() -> tuple[dict, bool]:
+    """AI settings from the local .env file, then Streamlit secrets. Returns (settings, key came from secrets)."""
+    local = dotenv_values(ENV_FILE) if ENV_FILE.exists() else {}
+    try:
+        secrets = {name: st.secrets[name] for name in st.secrets}
+    except Exception:  # No secrets configured, which is normal when running locally.
+        secrets = {}
+    return merge_settings(local, secrets), has_api_key(merge_settings({}, secrets))
 
-    values = dotenv_values(DEFAULT_ENV)
-    return bool(values.get("LLM_API_KEY") or (values.get("FINDER_API_KEY") and values.get("EVALUATOR_API_KEY")))
 
-
-def existing_runs() -> list[Path]:
-    if not OUTPUT_ROOT.exists():
-        return []
-    return sorted((p for p in OUTPUT_ROOT.iterdir() if (p / "promos.json").exists()), key=lambda p: p.stat().st_mtime, reverse=True)
+def existing_runs() -> list[tuple[str, Path]]:
+    """Your runs, newest first, then the bundled demo runs. Returns (label, folder)."""
+    found: list[tuple[str, Path]] = []
+    if OUTPUT_ROOT.exists():
+        mine = sorted((p for p in OUTPUT_ROOT.iterdir() if (p / "promos.json").exists()), key=lambda p: p.stat().st_mtime, reverse=True)
+        found += [(p.name, p) for p in mine]
+    if DEMO_ROOT.exists():
+        found += [(f"{p.name} (demo)", p) for p in sorted(DEMO_ROOT.iterdir()) if (p / "promos.json").exists()]
+    return found
 
 
 @st.cache_resource(show_spinner=False)
@@ -87,23 +99,37 @@ with st.sidebar:
     st.header("1. Choose a screenplay pack")
     uploaded = st.file_uploader("Screenplay ZIP", type="zip")
     use_sample = st.checkbox("Use the built in invented sample show", value=uploaded is None)
-    st.caption("Uploaded files stay on this machine and only go to a model provider in AI assisted mode.")
+    st.caption("An uploaded file goes to the computer running this app (on a hosted app, the host's server), "
+               "and to a model provider only in AI assisted mode.")
 
     st.header("2. Choose a mode")
     mode = st.radio("Selection method", ["Basic (no API key)", "AI assisted"], label_visibility="collapsed")
     fresh = False
+    settings, key_from_secrets = load_settings()
+    access = None
+    episode_text = ""
     if mode == "AI assisted":
-        if key_is_configured():
-            st.success("An API key is set in .env")
+        if has_api_key(settings):
+            st.success("An API key is configured.")
         else:
             st.warning("No API key found. Copy .env.example to .env and add a key, or use Basic mode.")
+        entered = st.text_input("AI access password", type="password", key="ai_password") if settings.get("AI_ACCESS_PASSWORD") else ""
+        access = ai_access(settings, key_from_secrets, entered)
+        if access.message:
+            (st.success if access.allowed else st.info)(access.message)
+        limit = max_episodes(settings) if access.needs_password else None
+        episode_text = st.text_input(
+            "Episodes to process", key="ai_episodes", placeholder="All" if limit is None else f"For example 1-{limit}",
+            help="For example 1-3,5. Leave empty for every episode." + (f" This app allows at most {limit} per run." if limit else ""),
+        )
         fresh = st.checkbox("Ask the models again instead of reusing saved answers")
 
     run_clicked = st.button("Find promos", type="primary", use_container_width=True)
 
     st.header("Earlier runs")
     runs = existing_runs()
-    chosen_run = st.selectbox("Open a run", ["(latest)"] + [run.name for run in runs]) if runs else None
+    run_paths = dict(runs)
+    chosen_run = st.selectbox("Open a run", ["(latest)"] + [label for label, _ in runs]) if runs else None
 
     st.header("Human review")
     reviewer = st.text_input("Reviewer name or ID", key="reviewer", help="Saved with each review, so several people can review the same run.")
@@ -119,6 +145,29 @@ if uploaded is not None and not use_sample:
     source_path.write_bytes(uploaded.getvalue())
 elif use_sample and SAMPLE.exists():
     source_path = SAMPLE
+
+selection = None
+if run_clicked and mode == "AI assisted" and source_path is not None:
+    # Checked before anything is sent: AI runs spend the owner's model quota.
+    if not access.allowed:
+        st.error(f"AI assisted run not started. {access.message}")
+        run_clicked = False
+    else:
+        try:
+            available = sorted(cached_pack(str(source_path), source_path.stat().st_mtime))
+        except ScreenplayPackError as error:
+            st.error(f"Could not read this pack. {error}")
+            run_clicked = False
+        else:
+            selection, problem = parse_episode_selection(episode_text, available)
+            limit = max_episodes(settings) if access.needs_password else None
+            if problem:
+                st.error(f"AI assisted run not started. {problem}")
+                run_clicked = False
+            elif limit is not None and len(selection) > limit:
+                st.error(f"AI assisted run not started. This app allows at most {limit} episode(s) per AI run, to stay within the "
+                         f"free model quota. Choose episodes, for example 1-{limit}.")
+                run_clicked = False
 
 if run_clicked:
     if source_path is None:
@@ -136,7 +185,8 @@ if run_clicked:
             if short_mode == "basic":
                 summary = run_basic_pipeline(source_path, run_dir, on_progress=show_progress)
             else:
-                summary = run_ai_pipeline(source_path, run_dir, use_cache=not fresh, cache_dir=OUTPUT_ROOT / "llm_cache", on_progress=show_progress)
+                summary = run_ai_pipeline(source_path, run_dir, use_cache=not fresh, cache_dir=OUTPUT_ROOT / "llm_cache",
+                                          on_progress=show_progress, only_episodes=selection, env_values=settings)
             bar.empty()
             st.session_state["current_run"] = str(run_dir)
             if summary.get("stopped_because"):
@@ -156,15 +206,19 @@ if run_clicked:
 
 run_to_show = None
 if chosen_run and chosen_run != "(latest)":
-    run_to_show = OUTPUT_ROOT / chosen_run
+    run_to_show = run_paths[chosen_run]
 elif st.session_state.get("current_run"):
     run_to_show = Path(st.session_state["current_run"])
 elif runs:
-    run_to_show = runs[0]
+    run_to_show = runs[0][1]
 
 if run_to_show is None or not (run_to_show / "promos.json").exists():
     st.info("Choose a pack and click Find promos. The built in sample show works without any key.")
     st.stop()
+
+if run_to_show.parent == DEMO_ROOT:
+    st.info("You are looking at a precomputed demo: Basic mode on an invented sample show, saved with the app. "
+            "To make your own run, choose a pack in the sidebar and click Find promos.")
 
 data = json.loads((run_to_show / "promos.json").read_text(encoding="utf-8"))
 summary = json.loads((run_to_show / "processing_summary.json").read_text(encoding="utf-8"))
@@ -278,7 +332,7 @@ if promos:
                 st.caption("Could not open the pack for this run.")
 
     # Human review. Saved apart from the run, so the AI's outputs are never changed.
-    review_path = review_store_path(run_to_show.parent)
+    review_path = review_store_path(OUTPUT_ROOT)
     records, problems = load_reviews(review_path)
     latest = latest_reviews(records, run_to_show.name)
     st.subheader("Human review")
@@ -324,8 +378,12 @@ if promos:
     reviewed = {clip_key for (_, clip_key, _) in latest}
     st.caption(f"Reviewed in this run: {sum(1 for p in promos if p['clip_key'] in reviewed)} of {len(promos)} clips, "
                f"by {len({key[2] for key in latest})} reviewer(s). Reviews are stored in {review_path}.")
+    st.caption("Reviews are saved on the computer running this app. On a hosted app such as Streamlit Community Cloud that storage "
+               "is temporary and is wiped when the app restarts or sleeps, so download your reviews to keep them.")
     if blind:
-        st.caption("Turn off blind review mode to compare human and AI ratings and to export the reviews.")
+        st.caption("Turn off blind review mode to compare human and AI ratings. The download below holds your reviews only, no AI figures.")
+        st.download_button("My reviews (JSON)", json.dumps([record.model_dump(exclude={"promo_id"}) for record in latest.values()], indent=2, ensure_ascii=False),
+                           file_name=f"human_reviews_{run_to_show.name}_blind.json", disabled=not latest)
     else:
         st.subheader("Human review compared with AI")
         rows = comparison_rows(promos, run_to_show, method, latest)

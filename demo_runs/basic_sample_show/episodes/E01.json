@@ -1,0 +1,134 @@
+{
+  "episode": 1,
+  "pairs_tried": 182,
+  "valid_clips": 32,
+  "rejection_counts": {
+    "duration_out_of_range": 142,
+    "too_short": 8
+  },
+  "kept": [
+    {
+      "clip": {
+        "episode": 1,
+        "start": 24.5,
+        "end": 51.0,
+        "start_cue_id": "E01_C0014",
+        "end_cue_id": "E01_C0025",
+        "hook_cue_id": "E01_C0014",
+        "ending_cue_id": "E01_C0025",
+        "hook_offset": 0.0,
+        "adjustments": [],
+        "warnings": []
+      },
+      "parts": {
+        "hook": 90.0,
+        "ending": 70.0,
+        "understanding": 75.0,
+        "key_moment": 25.0,
+        "emotion": 72.9,
+        "continuity": 100.0,
+        "duration": 100.0
+      },
+      "penalties": {},
+      "payload": {
+        "hook_reasons": [
+          "physical event in the first 3 seconds",
+          "script marks the delivery as intense",
+          "threat, accusation or reveal wording",
+          "answers a question the viewer did not hear",
+          "the script shows this moment landing on someone"
+        ],
+        "ending_reasons": [
+          "the episode's own final beat",
+          "script marks the final line as intense",
+          "final line threatens or reveals"
+        ],
+        "understanding_reasons": [
+          "relationship words spoken: brother",
+          "stakes spoken: dead, kill"
+        ],
+        "emotion_reasons": [
+          "1 physical event(s)",
+          "intense delivery throughout"
+        ],
+        "continuity_reasons": [
+          "one scene"
+        ],
+        "key_moment_reasons": [],
+        "ad_warnings": []
+      },
+      "weights": {
+        "hook": 0.25,
+        "ending": 0.25,
+        "understanding": 0.15,
+        "key_moment": 0.1,
+        "emotion": 0.1,
+        "continuity": 0.05,
+        "duration": 0.1
+      }
+    },
+    {
+      "clip": {
+        "episode": 1,
+        "start": 2.0,
+        "end": 27.5,
+        "start_cue_id": "E01_C0003",
+        "end_cue_id": "E01_C0014",
+        "hook_cue_id": "E01_C0003",
+        "ending_cue_id": "E01_C0014",
+        "hook_offset": 0.0,
+        "adjustments": [],
+        "warnings": []
+      },
+      "parts": {
+        "hook": 80.0,
+        "ending": 63.0,
+        "understanding": 67.0,
+        "key_moment": 75.0,
+        "emotion": 73.9,
+        "continuity": 100.0,
+        "duration": 100.0
+      },
+      "penalties": {},
+      "payload": {
+        "hook_reasons": [
+          "script marks the delivery as intense",
+          "high stakes wording",
+          "a new exchange begins after a pause",
+          "the script shows this moment landing on someone"
+        ],
+        "ending_reasons": [
+          "script marks the final line as intense",
+          "final line threatens or reveals",
+          "the script shows this moment landing on someone",
+          "the script holds on this moment"
+        ],
+        "understanding_reasons": [
+          "relationship words spoken: brother",
+          "stakes spoken: dead, hang, lie, lying",
+          "mentions people not in the clip: witness"
+        ],
+        "emotion_reasons": [
+          "fast back and forth",
+          "intense delivery throughout"
+        ],
+        "continuity_reasons": [
+          "one scene"
+        ],
+        "key_moment_reasons": [
+          "covers the episode's main event"
+        ],
+        "ad_warnings": []
+      },
+      "weights": {
+        "hook": 0.25,
+        "ending": 0.25,
+        "understanding": 0.15,
+        "key_moment": 0.1,
+        "emotion": 0.1,
+        "continuity": 0.05,
+        "duration": 0.1
+      }
+    }
+  ]
+}

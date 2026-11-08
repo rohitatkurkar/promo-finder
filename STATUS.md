@@ -2,7 +2,7 @@
 
 The one master status document. Update this file instead of starting new lists.
 
-Last updated: 2026-11-08, after adding human review to the interface (branch `windows-audit`, local only, never pushed).
+Last updated: 2026-11-08, after preparing the interface for Streamlit Community Cloud (branch `windows-audit`).
 
 Decisions so far: provider is the **Groq free plan** (finder `openai/gpt-oss-120b`, evaluator `qwen/qwen3.8-27b`), with **Cloudflare Workers AI free** as a possible fallback. Budget is ₹0: no paid APIs, no payment method on any account. No key is configured and no screenplay text has been sent anywhere yet.
 
@@ -155,6 +155,26 @@ Before the first real run, the user should know:
 - **Not yet built:** reviewing rejected candidates, which is needed to measure what the tool misses rather than only what it picks badly. Summaries of human ratings across runs.
 
 Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on the invented sample show (`outputs/ai_20261108_215309`). It made 13 calls (about 13,550 tokens) and stopped after the blind tests, with no promos written. No real screenplay was involved. It was left as it is.
+
+## 4d. Ready for Streamlit Community Cloud (2026-11-08)
+
+**Done and tested locally. Not yet deployed.**
+
+- **Settings:** the interface reads AI settings from `.env` and then from Streamlit secrets, which win. `run_ai_pipeline` gained an optional `env_values` argument for this. Without it, the pipeline reads `.env` exactly as before. Discovery, evaluation, scoring and ranking are unchanged.
+- **AI access control** (new `promo_finder/hosting.py`):
+  - If `AI_ACCESS_PASSWORD` is set, AI mode needs it. The comparison is constant time.
+  - If the key comes from secrets but no password is set, AI mode stays off.
+  - A local `.env` with no password works as before.
+  - Password-protected runs may process at most `AI_MAX_EPISODES` episodes (default 3), chosen in a new "Episodes to process" box.
+- **Demo:** `demo_runs/basic_sample_show` is Basic mode on the invented sample show. It opens at once and is labelled as a precomputed demo.
+- **Reviews:** now stored under the main runs folder for every run, including the demo. The page says hosted storage is temporary. Blind mode offers a review download with no AI figures and no promo IDs.
+- **Config:**
+  - `.streamlit/config.toml` no longer fixes `server.address`, so the host can serve the app. Local runs use `--server.address localhost`, as the README now says.
+  - Added `.streamlit/secrets.toml.example` and an optional password note in `.env.example`.
+  - The upload caption no longer claims files stay on this machine.
+- **Tests:** 235 passed (24 new: 19 in `tests/test_hosting.py`, 5 in `tests/test_app.py`). The app tests point `PROMO_ENV_FILE` at a missing file, so they never read the real key or call a provider.
+- **Fresh copy check:** the 60 files to publish were copied to a clean folder with no `.env`, and installed from `requirements.txt` into a new Python 3.11 environment. All 235 tests passed there, the app started, showed the demo and ran Basic mode.
+- **Scans:** no keys in the publishable files or in the whole Git history, except the deliberately fake test key in `tests/test_llm_client.py`. No private paths ever committed. The confidentiality scan is clean.
 
 ## 5. Two segment promos
 

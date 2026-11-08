@@ -74,10 +74,12 @@ If a run stops, because of a rate limit for example, run the same command again.
 The interface, which has upload, results, clip details, human review and downloads:
 
 ```bash
-streamlit run app.py
+streamlit run app.py --server.address localhost
 ```
 
-Then open http://localhost:8501. On Windows: `.venv\Scripts\python.exe -m streamlit run app.py`.
+Then open http://localhost:8501. On Windows: `.venv\Scripts\python.exe -m streamlit run app.py --server.address localhost`. The `--server.address localhost` part keeps the app reachable only from your own computer, which matters when you upload confidential scripts.
+
+The app opens on a bundled demo: Basic mode on the invented sample show, in `demo_runs/`. Your own runs appear above it under "Earlier runs".
 
 Optional settings, set in the shell before starting:
 
@@ -86,7 +88,24 @@ Optional settings, set in the shell before starting:
 | `PROMO_OUTPUT_DIR` | The folder of runs to list and save to. Default `outputs/` |
 | `PROMO_PACK_DIR` | A folder holding the screenplay packs. The interface finds a run's pack there by file name, so its transcript shows without uploading the pack again |
 
-**AI assisted mode in the interface processes every episode in the pack.** To try a few episodes, use `run.py ai --episodes`.
+AI assisted mode in the interface has an "Episodes to process" box (for example `1-3`). Empty means every episode. If `AI_ACCESS_PASSWORD` is set, it also asks for that password and allows at most `AI_MAX_EPISODES` episodes per run (default 3).
+
+## Deploy on Streamlit Community Cloud
+
+The app runs on Streamlit Community Cloud (free) from this repository, with `app.py` as the entry point and `requirements.txt` for its packages.
+
+1. At https://share.streamlit.io sign in with GitHub and choose **Create app**, then **Deploy a public app from GitHub**.
+2. Repository `iteshm23/promo-finder`, the branch to publish, main file `app.py`.
+3. Under **Advanced settings**, choose Python **3.12**. Version 3.12 or newer reproduces the archived Basic results exactly.
+4. In **Secrets**, paste the lines from `.streamlit/secrets.toml.example` with your own values. The Groq key goes only there, never into the repository.
+5. Deploy.
+
+How the hosted app behaves:
+
+- **Basic mode, the demo, transcripts and human review** need no key.
+- **AI assisted mode** needs the access password from the secrets. Without a password in the secrets it stays off, so nobody with the link can spend the model quota. Each run is limited to `AI_MAX_EPISODES` episodes.
+- **Storage is temporary.** Runs and reviews saved on the hosted app are wiped when it restarts or sleeps. Download reviews with the export buttons to keep them.
+- **Uploads go to the host.** A ZIP uploaded to the hosted app is sent to Streamlit's servers, and in AI assisted mode to the model provider. Do not upload confidential scripts to a public app.
 
 ## Human review
 
@@ -100,7 +119,7 @@ Enter a reviewer name or ID in the sidebar first. Several people can review the 
 
 **Blind review mode** (sidebar) hides the AI's rank, scores, ratings, explanations and result files, and lists clips in story order, so they cannot sway the rating. Turn it off to see **Human review compared with AI**, a table with the AI's ratings beside the human ones, and to export the reviews as CSV or JSON.
 
-Reviews are saved in `<runs folder>/human_reviews/human_reviews.jsonl`, one line per saved review, never edited. Each review records the run folder name, the promo's `clip_key` (the stable ID built from its hook and ending cues), its `promo_id`, the reviewer, the time, and a fingerprint of the run's `promos.json`, so a run regenerated after review is flagged. Reviews never change the run's files, the ranking, the prompts or the models, and make no API calls. They stay on this computer and are ignored by Git.
+Reviews are saved in `<runs folder>/human_reviews/human_reviews.jsonl`, one line per saved review, never edited. Each review records the run folder name, the promo's `clip_key` (the stable ID built from its hook and ending cues), its `promo_id`, the reviewer, the time, and a fingerprint of the run's `promos.json`, so a run regenerated after review is flagged. Reviews never change the run's files, the ranking, the prompts or the models, and make no API calls. They stay on the computer running the app and are ignored by Git. On a hosted app that storage is temporary, so export them.
 
 ## Change the model
 
@@ -149,8 +168,8 @@ Screenplay packs may be confidential.
 - This repository holds no real screenplay content. `sample_input/` is an invented show.
 - `.gitignore` excludes `.env`, `outputs/`, `inputs/`, `private/` and ZIP files other than the sample.
 - Result files quote the screenplay, so keep them out of public places.
-- Keys are read only from `.env`, and are removed from anything saved or printed.
-- The interface only accepts connections from your own computer. Do not deploy it publicly with confidential scripts.
+- Keys are read only from `.env`, or on a hosted app from its secrets, and are removed from anything saved or printed.
+- Started with `--server.address localhost`, the interface only accepts connections from your own computer. A hosted copy is public: do not upload confidential scripts to it.
 - Check a provider's data terms before sending it a confidential script. See `DESIGN_DECISIONS.md`.
 
 Before publishing anything, run:

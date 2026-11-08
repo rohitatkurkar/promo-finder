@@ -1,0 +1,70 @@
+{
+  "episode": 2,
+  "pairs_tried": 110,
+  "valid_clips": 16,
+  "rejection_counts": {
+    "too_short": 8,
+    "duration_out_of_range": 86,
+    "below_a_required_floor": 1
+  },
+  "kept": [
+    {
+      "clip": {
+        "episode": 2,
+        "start": 38.5,
+        "end": 70.5,
+        "start_cue_id": "E02_C0016",
+        "end_cue_id": "E02_C0026",
+        "hook_cue_id": "E02_C0016",
+        "ending_cue_id": "E02_C0026",
+        "hook_offset": 0.0,
+        "adjustments": [],
+        "warnings": []
+      },
+      "parts": {
+        "hook": 83.0,
+        "ending": 55.0,
+        "understanding": 65.0,
+        "key_moment": 27.8,
+        "emotion": 79.8,
+        "continuity": 100.0,
+        "duration": 100.0
+      },
+      "penalties": {},
+      "payload": {
+        "hook_reasons": [
+          "physical event in the first 3 seconds",
+          "script marks the delivery as intense",
+          "the script shows this moment landing on someone"
+        ],
+        "ending_reasons": [
+          "the episode's own final beat",
+          "script marks the final line as intense"
+        ],
+        "understanding_reasons": [
+          "relationship words spoken: sister",
+          "stakes spoken: kill"
+        ],
+        "emotion_reasons": [
+          "fast back and forth",
+          "1 physical event(s)",
+          "intense delivery throughout"
+        ],
+        "continuity_reasons": [
+          "one scene"
+        ],
+        "key_moment_reasons": [],
+        "ad_warnings": []
+      },
+      "weights": {
+        "hook": 0.25,
+        "ending": 0.25,
+        "understanding": 0.15,
+        "key_moment": 0.1,
+        "emotion": 0.1,
+        "continuity": 0.05,
+        "duration": 0.1
+      }
+    }
+  ]
+}

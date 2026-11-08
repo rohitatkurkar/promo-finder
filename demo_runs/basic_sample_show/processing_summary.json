@@ -1,0 +1,25 @@
+{
+  "mode": "basic",
+  "engine_version": "basic_v3",
+  "title": "synthetic_show",
+  "input_file": "synthetic_show.zip",
+  "episodes_in_pack": 3,
+  "episodes_processed": 3,
+  "episodes_resumed_from_checkpoint": 0,
+  "episodes_with_no_recommendation": [
+    2
+  ],
+  "pairs_tried": 355,
+  "valid_clips_before_selection": 55,
+  "rejection_counts": {
+    "duration_out_of_range": 279,
+    "too_short": 20,
+    "below_a_required_floor": 2,
+    "hook_starts_mid_sentence": 1
+  },
+  "clips_below_the_bar_after_variety_penalty": 1,
+  "recommended_clips": 3,
+  "duplicates_removed": [],
+  "verification_errors": [],
+  "processing_seconds": 0.1
+}

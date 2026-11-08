@@ -12,6 +12,7 @@ from conftest import ROOT
 @pytest.fixture
 def app(tmp_path, monkeypatch):
     monkeypatch.setenv("PROMO_OUTPUT_DIR", str(tmp_path / "outputs"))
+    monkeypatch.setenv("PROMO_ENV_FILE", str(tmp_path / "no.env"))  # Never read the real key in tests.
     return AppTest.from_file(str(ROOT / "app.py"), default_timeout=60)
 
 
@@ -121,4 +122,73 @@ def test_blind_mode_hides_the_ai_judgement(app):
     chooser = next(box for box in app.selectbox if box.label == "Choose a clip")
     assert all(option.startswith("Episode ") and "B0" not in option for option in chooser.options)
     assert not any("Score breakdown" in item.value or "Why it could work" in item.value for item in app.markdown)
-    assert not app.get("download_button")  # The run's files hold the AI's scores.
+    labels = [button.label for button in app.get("download_button")]
+    assert not {"JSON", "CSV", "Report", "Blank review sheet", "Reviews CSV", "Reviews JSON"} & set(labels)  # They hold AI scores.
+
+
+def test_the_bundled_demo_shows_before_any_run(app):
+    app.run()
+    assert not app.exception
+    assert any("precomputed demo" in item.value for item in app.info)
+    assert any("Results" in item.value for item in app.header)
+    assert any(box.label == "Choose a clip" for box in app.selectbox)
+
+
+def _choose_ai(app, secrets):
+    for name, value in secrets.items():
+        app.secrets[name] = value
+    app.run()
+    next(radio for radio in app.radio if radio.label == "Selection method").set_value("AI assisted").run()
+    assert not app.exception
+    return app
+
+
+def _find_promos(app):
+    next(button for button in app.sidebar.button if button.label == "Find promos").click().run()
+    assert not app.exception
+
+
+def _ai_runs(tmp_path):
+    folder = tmp_path / "outputs"
+    return [path for path in folder.iterdir() if path.name.startswith("ai_")] if folder.exists() else []
+
+
+def test_hosted_key_without_password_keeps_ai_off(app, tmp_path):
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key"})
+    assert any("An API key is configured" in item.value for item in app.success)
+    assert any("switched off" in item.value for item in app.info)
+    _find_promos(app)
+    assert any("AI assisted run not started" in item.value for item in app.error)
+    assert _ai_runs(tmp_path) == []
+
+
+def test_wrong_or_missing_password_starts_nothing(app, tmp_path):
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_ACCESS_PASSWORD": "right-password"})
+    _find_promos(app)
+    assert any("Enter the AI access password" in item.value for item in app.error)
+    app.text_input(key="ai_password").input("wrong-password").run()
+    _find_promos(app)
+    assert any("Incorrect AI access password" in item.value for item in app.error)
+    assert _ai_runs(tmp_path) == []
+
+
+def test_correct_password_passes_the_gate_and_reads_secrets(app, tmp_path):
+    # No models are set, so the pipeline stops at its own setup check before any network call.
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_ACCESS_PASSWORD": "right-password"})
+    app.text_input(key="ai_password").input("right-password").run()
+    assert any("unlocked" in item.value for item in app.success)
+    _find_promos(app)
+    assert any("No model set for the finder role" in item.value for item in app.error)
+    assert not any("secret-test-key" in item.value for item in app.error)
+
+
+def test_hosted_ai_runs_are_limited_in_episodes(app, tmp_path):
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_ACCESS_PASSWORD": "pw", "AI_MAX_EPISODES": "2",
+                     "FINDER_MODEL": "m1", "EVALUATOR_MODEL": "m2"})
+    app.text_input(key="ai_password").input("pw").run()
+    _find_promos(app)  # Empty box means all 3 sample episodes, over the limit of 2.
+    assert any("at most 2 episode(s)" in item.value for item in app.error)
+    app.text_input(key="ai_episodes").input("9").run()
+    _find_promos(app)
+    assert any("Not in this pack" in item.value for item in app.error)
+    assert _ai_runs(tmp_path) == []

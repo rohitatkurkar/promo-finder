@@ -1,0 +1,237 @@
+{
+  "schema_version": "1.0",
+  "selection_method": "basic",
+  "title": "synthetic_show",
+  "promos": [
+    {
+      "schema_version": "1.0",
+      "promo_id": "B0001",
+      "clip_key": "E01_C0014__C0025",
+      "global_rank": 1,
+      "first_post_recommendation": true,
+      "first_post_reason": "Signals only: the highest score after favouring early episodes and clips whose dialogue echoes the show's title (0 title word(s) spoken here), because those clues suggest the show's premise. Basic mode cannot confirm that this clip actually introduces the premise, so a person must check it.",
+      "segments": [
+        {
+          "episode": 1,
+          "start_seconds": 24.5,
+          "end_seconds": 51.0,
+          "start_timestamp": "00:24.50",
+          "end_timestamp": "00:51.00",
+          "start_cue_id": "E01_C0014",
+          "end_cue_id": "E01_C0025",
+          "boundary_adjustments": []
+        }
+      ],
+      "total_duration_seconds": 26.5,
+      "hook": {
+        "cue_ids": [
+          "E01_C0014"
+        ],
+        "evidence": "I want the truth, and I have a witness who saw you.",
+        "strength": "not_rated",
+        "rating_out_of_5": null,
+        "rated_by": "none: basic mode uses signals and makes no judgement",
+        "within_first_three_seconds": true,
+        "seconds_from_clip_start": 0.0,
+        "reason": "physical event in the first 3 seconds; script marks the delivery as intense; threat, accusation or reveal wording; answers a question the viewer did not hear; the script shows this moment landing on someone"
+      },
+      "cliffhanger": {
+        "cue_ids": [
+          "E01_C0025"
+        ],
+        "evidence": "He is sitting right there.",
+        "strength": "not_rated",
+        "rating_out_of_5": null,
+        "rated_by": "none: basic mode uses signals and makes no judgement",
+        "resolves_conflict": null,
+        "reason": "the episode's own final beat; script marks the final line as intense; final line threatens or reveals"
+      },
+      "cold_viewer_check": {
+        "result": "not_performed",
+        "main_conflict_understood": null,
+        "unresolved_question_understood": null,
+        "who_appears_involved": "",
+        "what_is_happening": "",
+        "main_conflict": "",
+        "viewer_wants_to_know": "",
+        "verified_evidence_lines": [],
+        "unverified_evidence_lines": [],
+        "missing_context": ""
+      },
+      "independent_understanding_explanation": "Not tested. Word based estimate only: relationship words spoken: brother; stakes spoken: dead, kill",
+      "score_breakdown": {
+        "hook": 90.0,
+        "ending": 70.0,
+        "understanding": 75.0,
+        "key_moment": 25.0,
+        "emotion": 72.9,
+        "continuity": 100.0,
+        "duration": 100.0
+      },
+      "total_score": 76.04,
+      "overall_explanation": "Signals only: opens with physical event in the first 3 seconds; ends with the episode's own final beat.",
+      "spoiler_risk": "unknown",
+      "warnings": [],
+      "selection_method": "basic",
+      "human_review": {
+        "status": "not_reviewed",
+        "rating": null,
+        "reviewer": null
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "promo_id": "B0002",
+      "clip_key": "E03_C0005__C0013",
+      "global_rank": 2,
+      "first_post_recommendation": false,
+      "first_post_reason": "",
+      "segments": [
+        {
+          "episode": 3,
+          "start_seconds": 9.5,
+          "end_seconds": 39.0,
+          "start_timestamp": "00:09.50",
+          "end_timestamp": "00:39.00",
+          "start_cue_id": "E03_C0005",
+          "end_cue_id": "E03_C0013",
+          "boundary_adjustments": []
+        }
+      ],
+      "total_duration_seconds": 29.5,
+      "hook": {
+        "cue_ids": [
+          "E03_C0005"
+        ],
+        "evidence": "You knew he was alive, and you let me bury him!",
+        "strength": "not_rated",
+        "rating_out_of_5": null,
+        "rated_by": "none: basic mode uses signals and makes no judgement",
+        "within_first_three_seconds": true,
+        "seconds_from_clip_start": 0.0,
+        "reason": "script marks the delivery as intense; threat, accusation or reveal wording; high stakes wording; opening line leans on earlier context; answers a question the viewer did not hear; the script shows this moment landing on someone"
+      },
+      "cliffhanger": {
+        "cue_ids": [
+          "E03_C0013"
+        ],
+        "evidence": "Then I will see you at the gallows, Aunt.",
+        "strength": "not_rated",
+        "rating_out_of_5": null,
+        "rated_by": "none: basic mode uses signals and makes no judgement",
+        "resolves_conflict": null,
+        "reason": "the episode's own final beat; script marks the final line as intense; final line threatens or reveals; final line carries high stakes"
+      },
+      "cold_viewer_check": {
+        "result": "not_performed",
+        "main_conflict_understood": null,
+        "unresolved_question_understood": null,
+        "who_appears_involved": "",
+        "what_is_happening": "",
+        "main_conflict": "",
+        "viewer_wants_to_know": "",
+        "verified_evidence_lines": [],
+        "unverified_evidence_lines": [],
+        "missing_context": ""
+      },
+      "independent_understanding_explanation": "Not tested. Word based estimate only: relationship words spoken: aunt, brother, family; stakes spoken: alive, gallows, hang, stole",
+      "score_breakdown": {
+        "hook": 63.0,
+        "ending": 82.0,
+        "understanding": 95.0,
+        "key_moment": 71.4,
+        "emotion": 61.6,
+        "continuity": 100.0,
+        "duration": 100.0,
+        "penalty_late_story_position": -10.0
+      },
+      "total_score": 68.8,
+      "overall_explanation": "Signals only: opens with script marks the delivery as intense; ends with the episode's own final beat.",
+      "spoiler_risk": "unknown",
+      "warnings": [],
+      "selection_method": "basic",
+      "human_review": {
+        "status": "not_reviewed",
+        "rating": null,
+        "reviewer": null
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "promo_id": "B0003",
+      "clip_key": "E01_C0003__C0014",
+      "global_rank": 3,
+      "first_post_recommendation": false,
+      "first_post_reason": "",
+      "segments": [
+        {
+          "episode": 1,
+          "start_seconds": 2.0,
+          "end_seconds": 27.5,
+          "start_timestamp": "00:02.00",
+          "end_timestamp": "00:27.50",
+          "start_cue_id": "E01_C0003",
+          "end_cue_id": "E01_C0014",
+          "boundary_adjustments": []
+        }
+      ],
+      "total_duration_seconds": 25.5,
+      "hook": {
+        "cue_ids": [
+          "E01_C0003"
+        ],
+        "evidence": "You sank that ship and let your own brother drown!",
+        "strength": "not_rated",
+        "rating_out_of_5": null,
+        "rated_by": "none: basic mode uses signals and makes no judgement",
+        "within_first_three_seconds": true,
+        "seconds_from_clip_start": 0.0,
+        "reason": "script marks the delivery as intense; high stakes wording; a new exchange begins after a pause; the script shows this moment landing on someone"
+      },
+      "cliffhanger": {
+        "cue_ids": [
+          "E01_C0014"
+        ],
+        "evidence": "I want the truth, and I have a witness who saw you.",
+        "strength": "not_rated",
+        "rating_out_of_5": null,
+        "rated_by": "none: basic mode uses signals and makes no judgement",
+        "resolves_conflict": null,
+        "reason": "script marks the final line as intense; final line threatens or reveals; the script shows this moment landing on someone; the script holds on this moment"
+      },
+      "cold_viewer_check": {
+        "result": "not_performed",
+        "main_conflict_understood": null,
+        "unresolved_question_understood": null,
+        "who_appears_involved": "",
+        "what_is_happening": "",
+        "main_conflict": "",
+        "viewer_wants_to_know": "",
+        "verified_evidence_lines": [],
+        "unverified_evidence_lines": [],
+        "missing_context": ""
+      },
+      "independent_understanding_explanation": "Not tested. Word based estimate only: relationship words spoken: brother; stakes spoken: dead, hang, lie, lying; mentions people not in the clip: witness",
+      "score_breakdown": {
+        "hook": 80.0,
+        "ending": 63.0,
+        "understanding": 67.0,
+        "key_moment": 75.0,
+        "emotion": 73.9,
+        "continuity": 100.0,
+        "duration": 100.0,
+        "penalty_repetition": -8.0
+      },
+      "total_score": 67.69,
+      "overall_explanation": "Signals only: opens with script marks the delivery as intense; ends with script marks the final line as intense.",
+      "spoiler_risk": "unknown",
+      "warnings": [],
+      "selection_method": "basic",
+      "human_review": {
+        "status": "not_reviewed",
+        "rating": null,
+        "reviewer": null
+      }
+    }
+  ]
+}
