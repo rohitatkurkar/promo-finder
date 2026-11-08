@@ -127,7 +127,7 @@ class UsageLedger:
         self.records.append(record)
         if self.path is not None:
             self.path.parent.mkdir(parents=True, exist_ok=True)
-            with self.path.open("a", encoding="utf-8") as handle:
+            with self.path.open("a", encoding="utf-8", newline="\n") as handle:
                 handle.write(json.dumps(record) + "\n")
 
     def load_existing(self) -> None:
@@ -477,7 +477,7 @@ class LLMClient:
             if self.use_cache and cache_path is not None:
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_text(json.dumps({"data": data, "raw_text": text, "input_tokens": input_tokens,
-                                                  "output_tokens": output_tokens}, ensure_ascii=False), encoding="utf-8")
+                                                  "output_tokens": output_tokens}, ensure_ascii=False), encoding="utf-8", newline="\n")
             return LLMResult(data, text, False, input_tokens, output_tokens, attempts)
 
         error = last_error or LLMError("unknown", "The call failed for an unknown reason")

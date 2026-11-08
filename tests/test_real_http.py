@@ -101,7 +101,7 @@ def test_wrong_key_over_real_http_is_reported_clearly(sample_zip, tmp_path, stan
     StandIn.required_key = "the-right-key"
     summary = run_ai_pipeline(sample_zip, tmp_path / "run", env_path=env_file(tmp_path, stand_in, "the-wrong-key"), cache_dir=tmp_path / "cache")
     assert summary["complete"] is False and "auth" in summary["stopped_because"]
-    assert "the-wrong-key" not in (tmp_path / "run" / "processing_summary.json").read_text()
+    assert "the-wrong-key" not in (tmp_path / "run" / "processing_summary.json").read_text(encoding="utf-8")
 
 
 def test_unknown_model_over_real_http_is_reported_clearly(sample_zip, tmp_path, stand_in):

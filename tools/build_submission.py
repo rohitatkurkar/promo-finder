@@ -18,7 +18,9 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from check_confidentiality import scan  # noqa: E402
 
-EXCLUDED_FOLDERS = {".venv", "__pycache__", ".pytest_cache", ".git", "outputs", "inputs", "private", ".claude"}
+EXCLUDED_FOLDERS = {".venv", "venv", "__pycache__", ".pytest_cache", ".git", "outputs", "inputs", "private", ".claude", "llm_cache"}
+# Any other virtual environment, such as a set aside .venv-macos-original, is platform specific and large.
+EXCLUDED_FOLDER_PREFIXES = (".venv",)
 # The candidate's own interview notes stay out by default, because the people reading this ZIP are the interviewers.
 PRIVATE_NOTES = {"INTERVIEW_PREP.md", "WALKTHROUGH_SCRIPT.md"}
 EXCLUDED_FILES = {".env", ".DS_Store", "secrets.toml"}
@@ -34,6 +36,8 @@ def build_prototype(target: Path, pack: Path, include_private_notes: bool = Fals
         for path in sorted(ROOT.rglob("*")):
             relative = path.relative_to(ROOT)
             if not path.is_file() or path.name in left_out or set(relative.parts) & EXCLUDED_FOLDERS:
+                continue
+            if any(part.startswith(EXCLUDED_FOLDER_PREFIXES) for part in relative.parts[:-1]):
                 continue
             if path.suffix == ".zip" and relative != Path("sample_input/synthetic_show.zip"):
                 continue

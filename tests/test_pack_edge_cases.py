@@ -102,4 +102,7 @@ def test_folder_input_works(tmp_path):
     folder = tmp_path / "show"
     (folder / "sub").mkdir(parents=True)
     (folder / "sub" / "episode-001.txt").write_text(GOOD_TEXT, encoding="utf-8")
-    assert len(load_pack(folder)[0]) == 1
+    episodes = load_pack(folder)[0]
+    assert len(episodes) == 1
+    # The same name on Windows and macOS, so result files do not depend on the platform.
+    assert episodes[0].file_name == "sub/episode-001.txt"

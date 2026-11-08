@@ -459,7 +459,8 @@ def load_pack(path: str | Path) -> tuple[list[Episode], list[ParseIssue]]:
 
     if path.is_dir():
         for file_path in sorted(path.rglob("*.txt")):
-            named_texts.append((str(file_path.relative_to(path)), _read_text(file_path.read_bytes(), str(file_path), pack_issues)))
+            # Forward slashes, as in a ZIP, so results name files the same way on every platform.
+            named_texts.append((file_path.relative_to(path).as_posix(), _read_text(file_path.read_bytes(), str(file_path), pack_issues)))
     else:
         try:
             with zipfile.ZipFile(path) as archive:

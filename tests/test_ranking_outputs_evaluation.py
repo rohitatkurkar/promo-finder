@@ -75,7 +75,7 @@ def test_basic_run_is_labelled_clearly_and_makes_no_false_claims(sample_zip, tmp
         assert promo["cold_viewer_check"]["result"] == "not_performed"
         assert promo["overall_explanation"].startswith("Signals only")
         assert 20 <= promo["total_duration_seconds"] <= 60
-    report = (tmp_path / "basic" / "report.md").read_text()
+    report = (tmp_path / "basic" / "report.md").read_text(encoding="utf-8")
     assert "Basic selections" in report and "not had any story judgement" in report
 
 
@@ -87,16 +87,26 @@ def test_basic_ignores_clip_with_a_cliffhanger_sound_only(sample_zip, tmp_path):
 
 def test_resume_reuses_saved_episodes(sample_zip, tmp_path):
     run_basic_pipeline(sample_zip, tmp_path / "basic")
-    first = (tmp_path / "basic" / "promos.json").read_text()
+    first = (tmp_path / "basic" / "promos.json").read_text(encoding="utf-8")
     summary = run_basic_pipeline(sample_zip, tmp_path / "basic")
     assert summary["episodes_resumed_from_checkpoint"] == 3
-    assert (tmp_path / "basic" / "promos.json").read_text() == first
+    assert (tmp_path / "basic" / "promos.json").read_text(encoding="utf-8") == first
+
+
+def test_text_outputs_use_lf_line_endings_on_every_platform(sample_zip, tmp_path):
+    """Windows text mode would write CRLF, so runs could never be byte identical across platforms."""
+    run_basic_pipeline(sample_zip, tmp_path / "basic")
+    run = tmp_path / "basic"
+    for name in ("promos.json", "report.md", "processing_summary.json", "data_quality.json", "checkpoint.json"):
+        assert b"\r\n" not in (run / name).read_bytes(), name
+    for path in (run / "episodes").glob("*.json"):
+        assert b"\r\n" not in path.read_bytes(), path.name
 
 
 def test_resume_after_a_stop_midway(sample_zip, tmp_path):
     run_basic_pipeline(sample_zip, tmp_path / "basic")
     checkpoint = tmp_path / "basic" / "checkpoint.json"
-    state = json.loads(checkpoint.read_text())
+    state = json.loads(checkpoint.read_text(encoding="utf-8"))
     del state["episodes"]["3"]
     checkpoint.write_text(json.dumps(state))
     summary = run_basic_pipeline(sample_zip, tmp_path / "basic")
@@ -118,7 +128,7 @@ def test_csv_matches_json(sample_zip, tmp_path):
 
 def test_csv_can_be_written_with_no_promos(tmp_path):
     write_promos_csv(tmp_path / "none.csv", [])
-    assert (tmp_path / "none.csv").read_text().startswith("global_rank")
+    assert (tmp_path / "none.csv").read_text(encoding="utf-8").startswith("global_rank")
 
 
 # Schema and tamper detection.

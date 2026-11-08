@@ -213,14 +213,14 @@ def test_weak_hooks_are_not_recommended_even_when_all_else_is_good(sample_zip, t
     summary = run(sample_zip, tmp_path, FakeProvider(hook_rating=3))
     assert summary["recommended_clips"] == 0
     assert summary["gate_failure_counts"]["hook_not_strong"] >= 1
-    assert json.loads((tmp_path / "run" / "rejected_candidates.json").read_text())
+    assert json.loads((tmp_path / "run" / "rejected_candidates.json").read_text(encoding="utf-8"))
 
 
 def test_weak_hook_skips_the_longer_cold_viewer_call(sample_zip, tmp_path):
     provider = FakeProvider(hook_rating=2)
     run(sample_zip, tmp_path, provider)
     assert not [r for r in provider.requests if r["body"]["messages"][0]["content"] == COLD_VIEWER_SYSTEM]
-    saved = json.loads((tmp_path / "run" / "rejected_candidates.json").read_text())
+    saved = json.loads((tmp_path / "run" / "rejected_candidates.json").read_text(encoding="utf-8"))
     assert all(item["evaluation"]["cold_viewer_skipped"] for item in saved)
     assert all(item["gate_failures"] == ["hook_rated_2_of_5_not_strong"] for item in saved)
 
@@ -296,7 +296,7 @@ def test_changing_the_model_restarts_progress(sample_zip, tmp_path):
     second = FakeProvider()
     summary = run(sample_zip, tmp_path, second, finder_model="another-model")
     assert [r for r in second.requests if r["body"]["messages"][0]["content"] == FINDER_SYSTEM]
-    assert json.loads((tmp_path / "run" / "run_config.json").read_text())["finder"]["model"] == "another-model"
+    assert json.loads((tmp_path / "run" / "run_config.json").read_text(encoding="utf-8"))["finder"]["model"] == "another-model"
     assert summary["complete"]
 
 
@@ -327,7 +327,7 @@ def test_no_key_is_written_anywhere_in_a_run(sample_zip, tmp_path):
 def test_same_model_for_both_roles_is_flagged(sample_zip, tmp_path):
     env = write_env(tmp_path / ".env", SECRET_KEY, finder="one-model", evaluator="one-model")
     run_ai_pipeline(sample_zip, tmp_path / "run", env_path=env, cache_dir=tmp_path / "cache", transport=FakeProvider(), sleep=lambda _: None)
-    config = json.loads((tmp_path / "run" / "run_config.json").read_text())
+    config = json.loads((tmp_path / "run" / "run_config.json").read_text(encoding="utf-8"))
     assert config["same_model_for_finding_and_judging"] is True and "favour" in config["note"]
 
 

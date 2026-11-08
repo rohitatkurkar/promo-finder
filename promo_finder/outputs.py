@@ -206,7 +206,7 @@ def verify_all(promos: list[Promo], episodes: dict[int, Episode]) -> list[str]:
 def write_json(path: Path, data) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_suffix(path.suffix + ".tmp")
-    temporary.write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8")
+    temporary.write_text(json.dumps(data, indent=2, ensure_ascii=False, default=str), encoding="utf-8", newline="\n")
     temporary.replace(path)  # Replacing in one step means a crash cannot leave half a file.
 
 
@@ -295,7 +295,7 @@ def write_report(path: Path, title: str, promos: list[Promo], summary: dict) -> 
             lines.append("- Boundary changes: " + " ".join(segment.boundary_adjustments))
         lines.append("")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text("\n".join(lines), encoding="utf-8")
+    path.write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def data_quality_report(episodes: list[Episode], pack_issues: list) -> dict:

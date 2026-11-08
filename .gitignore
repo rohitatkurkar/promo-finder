@@ -1,5 +1,7 @@
 # Secrets
 .env
+.env.*
+!.env.example
 
 # Confidential screenplay material must never enter this repository.
 inputs/
@@ -12,11 +14,23 @@ outputs/
 INTERVIEW_PREP.md
 WALKTHROUGH_SCRIPT.md
 
-# Python and tooling
+# Python and tooling. Virtual environments are platform specific, never shared.
 .venv/
+.venv-*/
+venv/
 __pycache__/
 *.pyc
 .pytest_cache/
 .streamlit/secrets.toml
 .claude/
+
+# Model answers quote the screenplay. Local model weights are large.
+llm_cache/
+*.gguf
+
+# Operating system clutter
 .DS_Store
+._*
+__MACOSX/
+Thumbs.db
+desktop.ini

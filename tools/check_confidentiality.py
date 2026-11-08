@@ -47,7 +47,7 @@ def read_targets(path: Path) -> list[tuple[str, str]]:
                     found.append((name, archive.read(name).decode("utf-8", errors="ignore")))
         return found
     for file_path in sorted(path.rglob("*")):
-        if not file_path.is_file() or any(part in SKIP_FOLDERS for part in file_path.parts):
+        if not file_path.is_file() or any(part in SKIP_FOLDERS or part.startswith(".venv") for part in file_path.parts):
             continue
         if file_path.suffix.lower() in TEXT_SUFFIXES:
             found.append((str(file_path.relative_to(path)), file_path.read_text(encoding="utf-8", errors="ignore")))

@@ -278,7 +278,7 @@ def compare_modes(basic_dir: str | Path, ai_dir: str | Path, basic_judged_path: 
 def write_comparison_markdown(path: str | Path, title: str, data: dict) -> None:
     lines = [f"# {title}", "", "```json", json.dumps(data, indent=2, ensure_ascii=False), "```", ""]
     Path(path).parent.mkdir(parents=True, exist_ok=True)
-    Path(path).write_text("\n".join(lines), encoding="utf-8")
+    Path(path).write_text("\n".join(lines), encoding="utf-8", newline="\n")
 
 
 def write_csv_rows(path: str | Path, rows: list[dict]) -> None:

@@ -1,0 +1,7 @@
+# Keep LF line endings in the working tree on every platform, including Windows
+# with core.autocrlf=true. Outputs and tests compare files byte for byte.
+* text=auto eol=lf
+
+*.zip binary
+*.pdf binary
+*.png binary

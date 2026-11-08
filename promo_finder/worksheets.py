@@ -114,11 +114,11 @@ def write_reference_kit(episodes: list[Episode], out_dir: str | Path, blank_rows
     written.append(index_path)
 
     guide_path = out / "REFERENCE_GUIDE.md"
-    guide_path.write_text(GUIDE, encoding="utf-8")
+    guide_path.write_text(GUIDE, encoding="utf-8", newline="\n")
     written.append(guide_path)
 
     browser_path = out / "screenplay_with_cue_ids.html"
-    browser_path.write_text(render_cue_browser(episodes), encoding="utf-8")
+    browser_path.write_text(render_cue_browser(episodes), encoding="utf-8", newline="\n")
     written.append(browser_path)
     return written
 

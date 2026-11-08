@@ -27,13 +27,29 @@ It only finds moments. It does not edit video, add music or post anything.
 
 ## Install
 
-Python 3.11 or newer.
+Python 3.11 or newer runs the code and the tests. **To reproduce the archived Basic results exactly, use Python 3.12 or newer.** Python 3.12 changed how `sum()` adds decimals, so on 3.11 two Basic scores come out 0.01 different (74.87 instead of 74.86, 61.19 instead of 61.2). The ranking is the same. The archived run was made on Python 3.13. `requirements-lock-windows.txt` lists the exact versions last tested, on Windows 11 with Python 3.14.0.
+
+A virtual environment only works on the system that made it. Never copy `.venv` between macOS and Windows; make a new one.
+
+macOS or Linux:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
+
+Windows (PowerShell). `py -3.14` picks the Python version; use any installed version from 3.12 up:
+
+```powershell
+py -3.14 -m venv .venv
+.venv\Scripts\Activate.ps1
+python -m pip install -r requirements.txt
+```
+
+If PowerShell refuses to run `Activate.ps1`, skip activation and call the environment's Python directly, for example `.venv\Scripts\python.exe run.py ...` and `.venv\Scripts\python.exe -m pytest`. To copy the example settings on Windows, use `Copy-Item .env.example .env` instead of `cp`. Paths with spaces need quotes, for example `--input "..\inputs\My Show-scripts.zip"`.
+
+Text results (JSON, Markdown, JSONL) are always written with LF line endings, so runs on Windows and macOS can be compared byte for byte. `.gitattributes` keeps source files in LF too.
 
 ## Run on a screenplay pack
 
