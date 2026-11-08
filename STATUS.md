@@ -2,7 +2,7 @@
 
 The one master status document. Update this file instead of starting new lists.
 
-Last updated: 2026-11-08, after the finalist outline privacy fix (branch `windows-audit`, local only, never pushed).
+Last updated: 2026-11-08, after adding human review to the interface (branch `windows-audit`, local only, never pushed).
 
 Decisions so far: provider is the **Groq free plan** (finder `openai/gpt-oss-120b`, evaluator `qwen/qwen3.8-27b`), with **Cloudflare Workers AI free** as a possible fallback. Budget is ₹0: no paid APIs, no payment method on any account. No key is configured and no screenplay text has been sent anywhere yet.
 
@@ -37,7 +37,7 @@ There is no `.env` file, so no API key is configured.
 - `llama-cpp-python` and other native model packages: not used anywhere in this prototype. Only `pyarrow`, `numpy` and `pandas` (through Streamlit) have native parts, and all installed as ready made Windows wheels.
 
 ### Tests
-- **Done and tested.** `.venv\Scripts\python.exe -m pytest`: **186 passed, 0 failed, 0 skipped, 0 warnings** in about 14 seconds after the audit. That is the original 185 plus 1 new regression test. After the outline fix (section 4a): **190 passed, 0 failed, 0 skipped.** Before any change, the original 185 also all passed on Windows (Python 3.11.7, first environment tried).
+- **Done and tested.** `.venv\Scripts\python.exe -m pytest`: **186 passed, 0 failed, 0 skipped, 0 warnings** in about 14 seconds after the audit. That is the original 185 plus 1 new regression test. After the outline fix (section 4a): **190 passed, 0 failed, 0 skipped.** After human review (section 4c): **211 passed, 0 failed, 0 skipped.** Before any change, the original 185 also all passed on Windows (Python 3.11.7, first environment tried).
 
 ### Basic baseline
 - **Done and tested.** `run.py basic` on the real pack, twice, on Python 3.14:
@@ -117,6 +117,45 @@ Before the first real run, the user should know:
 - **Tests:** 4 new tests in `tests/test_ai_pipeline.py`. They cover the outline function, an Episode 1 trial (only E1 sent), a later episode trial (Episode 2: E1 and E2 sent, E3 not), and separate batches (batch [E1, E3] gets E1 to E3, batch [E2] gets E1 and E2). All 4 failed before the change and pass after it.
 - **Other stages unchanged, checked:** on the sample show with the stand-in provider, every finder, hook test and cold viewer request was byte identical before and after, and so were the final promos. The full run's finalist request was also identical, because its batch reached the last episode. Basic mode on the real pack is still byte identical to the archive (`promos.json`, `promos.csv`, `data_quality.json`).
 
+## 4b. First real AI trial: Episode 1 on Groq (2026-11-08)
+
+**Experiment.** Episode 1 only, with finder `openai/gpt-oss-120b` and evaluator `qwen/qwen3.8-27b`, on the free plan with Zero Data Retention on. Results are in `private/runs/ai_trial_E01_groq_2026-11-08/`, with a human review pack in `E01_HUMAN_REVIEW.md` there.
+
+- 7 calls, no retries or failures, 8,828 tokens, about 10 seconds. Cost ₹0.
+- 3 candidates; 2 passed every gate (P0001, P0002); 1 failed the hook test (3 of 5). 0 verification errors.
+- Problems seen:
+  - the finder never offered the episode's last 20 seconds as an ending;
+  - the finder used its whole 2,000 token output budget;
+  - every passing rating sat exactly at the 4 of 5 bar, so the ratings barely separate clips;
+  - P0001 and P0002 share 18.9 seconds;
+  - P0001 counts as a duplicate of Basic's Episode 1 pick under the system's own rule.
+- Not yet reviewed by a person.
+
+## 4c. Human review in the interface (2026-11-08)
+
+**Done and tested** (automated tests, plus a check by hand in the running app on the invented sample show).
+
+- **New `promo_finder/reviews.py`:**
+  - Reviews are saved to `<runs folder>/human_reviews/human_reviews.jsonl`, one line per saved review, never edited. History is kept.
+  - Each review is keyed by run folder name and `clip_key`. `promo_id` is kept for reading but follows rank, so it is not a stable key.
+  - The latest review per run, clip and reviewer counts. Reviewer names ignore case and surrounding spaces.
+  - A fingerprint of `promos.json` is saved with each review, so a run regenerated after review is flagged.
+  - Ratings must be whole numbers 1 to 5, and the verdict must be yes, no or maybe. A damaged line is skipped and reported.
+  - CSV and JSON exports join each review with the AI's rank, score and ratings.
+- **`app.py`:**
+  - a reviewer name box in the sidebar;
+  - a Human review form under Clip details, filled in with your last answers;
+  - a "Human review compared with AI" table and the export buttons;
+  - blind review mode, which hides the rank, scores, ratings, explanations, first post choice and the run's files, and lists clips in story order with no promo IDs;
+  - the transcript now has end times and delivery notes;
+  - `PROMO_PACK_DIR` lets the app find a run's pack without uploading it again.
+- **Not changed:** discovery, evaluation, ranking, prompts, the schema, and every run file. No API calls. `human_reviews/` is ignored by Git.
+- **Tests:** 21 new. 17 in `tests/test_reviews.py`: save and reload, history, several reviewers, runs kept apart, 7 kinds of invalid input, damaged lines, run files byte identical after reviewing, rank order and AI figures, AI ratings read from an AI run, CSV and JSON exports, regenerated run flagged. 4 in `tests/test_app.py`: saving in the app with `promos.json` unchanged, missing answers refused, no form without a reviewer name, blind mode hiding the AI's judgement and files.
+- **Checked by hand:** a review was saved in the running app, the stored line was correct, `promos.json` kept the same fingerprint, the comparison table and blind mode displayed correctly, and the test review was then removed.
+- **Not yet built:** reviewing rejected candidates, which is needed to measure what the tool misses rather than only what it picks badly. Summaries of human ratings across runs.
+
+Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on the invented sample show (`outputs/ai_20261108_215309`). It made 13 calls (about 13,550 tokens) and stopped after the blind tests, with no promos written. No real screenplay was involved. It was left as it is.
+
 ## 5. Two segment promos
 
 Existing pieces (`schema.py`):
@@ -145,7 +184,7 @@ Missing:
 
 ## 7. Next step
 
-Provider chosen (Groq free plan). Awaiting the user: create a Groq account with no payment method, turn on Zero Data Retention in Data Controls, note the limits shown in the console, create a key and put it in a local `.env` (never in chat), leaving the price lines blank. Then run `check-provider`, which sends no screenplay text, and run AI mode on one episode only (Episode 1 sends the least), into a new run folder with its own cache.
+Human review of the Episode 1 trial, in the interface or with `E01_HUMAN_REVIEW.md`. Its findings decide the first changes to discovery or prompts. No further episodes are run until then.
 
 ## 8. Later (agreed scope, not started)
 

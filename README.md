@@ -9,8 +9,8 @@ It only finds moments. It does not edit video, add music or post anything.
 | Part | State |
 |---|---|
 | Basic mode | Works. Run on a real 50 episode pack with verified output |
-| AI assisted mode | Built and tested against a stand in server. **Never run on a real model, so its quality is unknown** |
-| Human review | Not done. All ratings are blank |
+| AI assisted mode | Run on a real model (Groq) for Episode 1 only. Quality across the show is not yet known |
+| Human review | The interface can record reviews (see "Human review" below). No real reviews have been entered yet |
 
 ## The rule behind the tool
 
@@ -71,11 +71,36 @@ python run.py ai --input sample_input/synthetic_show.zip --out outputs/ai_demo
 
 If a run stops, because of a rate limit for example, run the same command again. It continues from where it stopped.
 
-The interface, which has upload, results, clip details and downloads:
+The interface, which has upload, results, clip details, human review and downloads:
 
 ```bash
 streamlit run app.py
 ```
+
+Then open http://localhost:8501. On Windows: `.venv\Scripts\python.exe -m streamlit run app.py`.
+
+Optional settings, set in the shell before starting:
+
+| Setting | What it does |
+|---|---|
+| `PROMO_OUTPUT_DIR` | The folder of runs to list and save to. Default `outputs/` |
+| `PROMO_PACK_DIR` | A folder holding the screenplay packs. The interface finds a run's pack there by file name, so its transcript shows without uploading the pack again |
+
+**AI assisted mode in the interface processes every episode in the pack.** To try a few episodes, use `run.py ai --episodes`.
+
+## Human review
+
+Pick a run and a clip, read the full transcript under "See the screenplay for this clip", then rate it in the Human review form:
+
+- Hook quality, cliffhanger quality, clarity and overall quality, each 1 to 5
+- Would publish? Yes, No or Maybe
+- Optional comments
+
+Enter a reviewer name or ID in the sidebar first. Several people can review the same run; each person's latest review of a clip counts.
+
+**Blind review mode** (sidebar) hides the AI's rank, scores, ratings, explanations and result files, and lists clips in story order, so they cannot sway the rating. Turn it off to see **Human review compared with AI**, a table with the AI's ratings beside the human ones, and to export the reviews as CSV or JSON.
+
+Reviews are saved in `<runs folder>/human_reviews/human_reviews.jsonl`, one line per saved review, never edited. Each review records the run folder name, the promo's `clip_key` (the stable ID built from its hook and ending cues), its `promo_id`, the reviewer, the time, and a fingerprint of the run's `promos.json`, so a run regenerated after review is flagged. Reviews never change the run's files, the ranking, the prompts or the models, and make no API calls. They stay on this computer and are ignored by Git.
 
 ## Change the model
 
@@ -104,7 +129,7 @@ python run.py ai --input pack.zip --out outputs/test --finder-model some-model -
 | `processing_summary.json` | What was processed, what failed and why |
 | `usage_summary.json` | Real model calls, tokens and cost (AI assisted mode) |
 | `rejected_candidates.json` | Clips that failed a test, with the reasons |
-| `top_twenty_human_review_sheet.csv` | Blank sheet for a person's ratings |
+| `top_twenty_human_review_sheet.csv` | Blank sheet for rating offline. Reviews entered in the interface are kept separately (see "Human review") |
 
 ## Check the output
 

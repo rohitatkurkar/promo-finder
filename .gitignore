@@ -7,6 +7,8 @@
 inputs/
 private/
 outputs/
+# Human reviews quote and judge the screenplay, so they stay on this computer.
+human_reviews/
 *.zip
 !sample_input/synthetic_show.zip
 
