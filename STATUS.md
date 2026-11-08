@@ -131,6 +131,25 @@ Before the first real run, the user should know:
   - P0001 counts as a duplicate of Basic's Episode 1 pick under the system's own rule.
 - Not yet reviewed by a person.
 
+## 4b2. Full 50 episode AI run on Groq (2026-11-08)
+
+**Experiment, complete.** Same configuration as the Episode 1 trial. Results are in `private/runs/ai_full_50_groq_2026-11-08/`. The cache was seeded with the Episode 1 trial's 7 replies, so Episode 1 reuses the exact results under review.
+
+- **Coverage:** 50 of 50 episodes processed, none failed or pending. 0 verification errors. Complete: true.
+- **Usage:**
+  - 162 model calls plus 6 reused from the cache, 0 failed. 76 calls needed a second or third attempt; since no call failed and no reply was invalid JSON, these were most likely rate-limit waits.
+  - Tokens: 242,052 in total. Finder 159,313 (49 calls); evaluator 82,739 (84 hook tests, 25 cold viewer tests, 4 finalist batches).
+  - Time: 43.7 minutes. Cost ₹0 (free plan, no payment method).
+- **Results:**
+  - 87 candidates; 26 passed every gate and all 26 were recommended. Gate failures: 60 weak hooks and 1 ending that settles the conflict.
+  - 18 of 50 episodes have a recommendation.
+  - First post is Episode 1, 00:39.00 to 01:19.00, the same clip as the trial's P0001.
+- **Problems seen:**
+  - **The finder's 2,000 token output cap silently lost 7 episodes** (5, 13, 17, 36, 45, 46, 49). In each, gpt-oss-120b used the whole budget, mostly on hidden reasoning, then returned a valid reply with only hook events, so they produced no candidates. The client retries with more room only when a reply fails to parse, so this was never retried. Episode 21 had events but no pair fitted 20 to 60 seconds.
+  - Every recommended clip's hook is rated exactly 4 of 5, and its ending 4 (22 clips) or 5 (4 clips). The ratings barely separate the clips.
+  - 5 recommended clips have high spoiler risk and 9 medium. The penalty lowers their score but does not remove them.
+- Not yet reviewed by a person.
+
 ## 4c. Human review in the interface (2026-11-08)
 
 **Done and tested** (automated tests, plus a check by hand in the running app on the invented sample show).
