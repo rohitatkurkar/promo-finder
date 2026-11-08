@@ -12,7 +12,7 @@ Labels: **Done and tested** · **Implemented but unverified** · **Experiment** 
 
 | Path (from the outer project folder) | What it is | In Git? |
 |---|---|---|
-| `prototype/` | The foundation codebase. Own Git repo, remote `github.com/iteshm23/promo-finder`, one commit `5485814` on `main` | yes |
+| `prototype/` | The foundation codebase. Own Git repo. Remote `origin` is `github.com/rohitatkurkar/promo-finder`. The first commit (`5485814`) was published earlier at `github.com/iteshm23/promo-finder`, kept as remote `iteshm23-original` | yes |
 | `prototype/promo_finder/` | Package: `parser`, `boundaries`, `signals`, `basic_mode`, `ai_mode`, `prompts`, `masking`, `llm_client`, `ranking`, `schema`, `outputs`, `evaluation`, `worksheets`, `pipeline` | yes |
 | `prototype/run.py` | Command line entry point | yes |
 | `prototype/app.py` | Streamlit interface | yes |

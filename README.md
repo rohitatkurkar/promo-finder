@@ -95,7 +95,7 @@ AI assisted mode in the interface has an "Episodes to process" box (for example 
 The app runs on Streamlit Community Cloud (free) from this repository, with `app.py` as the entry point and `requirements.txt` for its packages.
 
 1. At https://share.streamlit.io sign in with GitHub and choose **Create app**, then **Deploy a public app from GitHub**.
-2. Repository `iteshm23/promo-finder`, the branch to publish, main file `app.py`.
+2. Repository `rohitatkurkar/promo-finder`, branch `main`, main file `app.py`.
 3. Under **Advanced settings**, choose Python **3.12**. Version 3.12 or newer reproduces the archived Basic results exactly.
 4. In **Secrets**, paste the lines from `.streamlit/secrets.toml.example` with your own values. The Groq key goes only there, never into the repository.
 5. Deploy.
