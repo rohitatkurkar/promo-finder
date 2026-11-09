@@ -1,0 +1,25 @@
+{
+  "clip_key": "E30_C0049__C0071",
+  "hook_rating": 4,
+  "what_grabs_attention": "The speaker is giving explicit, cold-blooded instructions to frame a woman for a crime and have her executed, which is shocking and hostile.",
+  "what_is_missing": "Context on who these people are or why this is happening, but the dialogue itself is strong enough to hook.",
+  "who_appears_involved": "SPEAKER A, SPEAKER B, SPEAKER C, and a chained woman in a dungeon.",
+  "what_is_happening": "Three individuals conspire to frame a woman named Juliana as a witch and have her executed, while she is shown imprisoned in a dungeon.",
+  "main_conflict": "A group of conspirators plans to frame and execute a woman, who is currently held in a dungeon.",
+  "wants_to_know_next": "Will the conspirators succeed in framing Juliana, and can she escape or prove her innocence?",
+  "missing_context": "The specific relationship between the speakers and Juliana, the nature of the 'botanical ledger', and why Juliana is currently a prisoner.",
+  "verified_evidence": [
+    "Do not hide the evidence, manufacture it. Drag her before the magistrate tomorrow, frame the trial, buy the jury, and let the State hang her.",
+    "Tomorrow, she stops being a prisoner. She becomes a witch."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 5,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

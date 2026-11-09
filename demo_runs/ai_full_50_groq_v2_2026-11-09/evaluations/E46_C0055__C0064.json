@@ -1,0 +1,26 @@
+{
+  "clip_key": "E46_C0055__C0064",
+  "hook_rating": 4,
+  "what_grabs_attention": "The aggressive, confrontational dialogue about 'stealing' and 'undoing' power, combined with the physical action of waving a letter overhead, creates a sense of immediate conflict and drama.",
+  "what_is_missing": "Context on who the congregation is, what the letter is, or why this person has the 'power' to undo something, which makes the threat feel slightly abstract without the backstory.",
+  "who_appears_involved": "SPEAKER A, a priest or religious authority figure holding a letter, and SPEAKER B, a Duke, along with a congregation and guards with halberds.",
+  "what_is_happening": "A priest and a Duke are arguing in a chapel about which court has jurisdiction over the Duke's marriage.",
+  "main_conflict": "The priest claims the High Religious Council can rule on the Duke's marriage, while the Duke insists it is a matter for the Crown's peerage court and refuses to be threatened by armed guards.",
+  "wants_to_know_next": "Will the Duke accept the ten-day deadline to prove his case before the council, or will the confrontation escalate?",
+  "missing_context": "The specific nature of the 'stealing' mentioned by Speaker A, the identity of 'her', and why the Duke is in a chapel with armed guards.",
+  "verified_evidence": [
+    "A Duke's marriage is judged by the Crown's peerage court, not by a parish priest's seal.",
+    "Then let it prove that in ten days, before witnesses. Not with six halberds pointed at me in my own chapel.",
+    "Ten days. And if the council rules against you, this county watches you lose her twice."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 3,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

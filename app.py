@@ -40,6 +40,7 @@ PACK_DIR = os.environ.get("PROMO_PACK_DIR")
 ENV_FILE = Path(os.environ.get("PROMO_ENV_FILE", DEFAULT_ENV))
 # Precomputed results on the invented sample show, shipped with the app so it has something to show at once.
 DEMO_ROOT = ROOT / "demo_runs"
+YOUR_LATEST_RUN = "Your latest run"
 SAMPLE = ROOT / "sample_input" / "synthetic_show.zip"
 KIND_ICON = {DIALOGUE: "Line", ACTION: "Action", CAMERA: "Shot"}
 RATING_FIELDS = [
@@ -65,14 +66,26 @@ def load_settings() -> tuple[dict, bool]:
     return merge_settings(local, secrets), has_api_key(merge_settings({}, secrets))
 
 
+def demo_catalog() -> dict:
+    """Labels, order and default for the runs bundled in demo_runs/. Folders not listed still appear, after the listed ones."""
+    path = DEMO_ROOT / "catalog.json"
+    catalog = json.loads(path.read_text(encoding="utf-8")) if path.exists() else {}
+    entries = {entry["folder"]: entry for entry in catalog.get("runs", [])}
+    return {"default": catalog.get("default"), "entries": entries, "order": [entry["folder"] for entry in catalog.get("runs", [])]}
+
+
 def existing_runs() -> list[tuple[str, Path]]:
-    """Your runs, newest first, then the bundled demo runs. Returns (label, folder)."""
+    """The bundled demo runs in catalog order, then runs saved on this computer, newest first. Returns (label, folder)."""
     found: list[tuple[str, Path]] = []
+    if DEMO_ROOT.exists():
+        catalog = demo_catalog()
+        folders = [p for p in DEMO_ROOT.iterdir() if (p / "promos.json").exists()]
+        rank = {name: position for position, name in enumerate(catalog["order"])}
+        for p in sorted(folders, key=lambda p: (rank.get(p.name, len(rank)), p.name)):
+            found.append((catalog["entries"].get(p.name, {}).get("label") or f"{p.name} (demo)", p))
     if OUTPUT_ROOT.exists():
         mine = sorted((p for p in OUTPUT_ROOT.iterdir() if (p / "promos.json").exists()), key=lambda p: p.stat().st_mtime, reverse=True)
-        found += [(p.name, p) for p in mine]
-    if DEMO_ROOT.exists():
-        found += [(f"{p.name} (demo)", p) for p in sorted(DEMO_ROOT.iterdir()) if (p / "promos.json").exists()]
+        found += [(f"Saved run: {p.name}", p) for p in mine]
     return found
 
 
@@ -129,7 +142,18 @@ with st.sidebar:
     st.header("Earlier runs")
     runs = existing_runs()
     run_paths = dict(runs)
-    chosen_run = st.selectbox("Open a run", ["(latest)"] + [label for label, _ in runs]) if runs else None
+    run_options = [label for label, _ in runs]
+    if run_clicked or st.session_state.get("current_run"):
+        run_options = [YOUR_LATEST_RUN] + run_options
+    if run_clicked:
+        st.session_state["open_run"] = YOUR_LATEST_RUN  # Show the run just made, not the default.
+    default_folder = demo_catalog()["default"] if DEMO_ROOT.exists() else None
+    default_label = next((label for label, path in runs if path.parent == DEMO_ROOT and path.name == default_folder), None)
+    if st.session_state.get("open_run") not in run_options:
+        st.session_state.pop("open_run", None)
+    # The final run opens by default. A remembered choice is used as is (Streamlit warns if both are given).
+    start = {} if "open_run" in st.session_state else {"index": run_options.index(default_label) if default_label in run_options else 0}
+    chosen_run = st.selectbox("Open a run", run_options, key="open_run", **start) if run_options else None
 
     st.header("Human review")
     reviewer = st.text_input("Reviewer name or ID", key="reviewer", help="Saved with each review, so several people can review the same run.")
@@ -205,20 +229,23 @@ if run_clicked:
             st.error(f"AI assisted mode could not start. {error.detail}")
 
 run_to_show = None
-if chosen_run and chosen_run != "(latest)":
+if chosen_run == YOUR_LATEST_RUN:
+    if st.session_state.get("current_run"):
+        run_to_show = Path(st.session_state["current_run"])
+    elif default_label:  # Nothing was made (for example the run was refused), so show the default run.
+        run_to_show = run_paths[default_label]
+elif chosen_run:
     run_to_show = run_paths[chosen_run]
-elif st.session_state.get("current_run"):
-    run_to_show = Path(st.session_state["current_run"])
-elif runs:
-    run_to_show = runs[0][1]
 
 if run_to_show is None or not (run_to_show / "promos.json").exists():
     st.info("Choose a pack and click Find promos. The built in sample show works without any key.")
     st.stop()
 
 if run_to_show.parent == DEMO_ROOT:
-    st.info("You are looking at a precomputed demo: Basic mode on an invented sample show, saved with the app. "
-            "To make your own run, choose a pack in the sidebar and click Find promos.")
+    entry = demo_catalog()["entries"].get(run_to_show.name, {})
+    message = entry.get("description") or "A precomputed run saved with the app."
+    message += " To make your own run, choose a pack in the sidebar and click Find promos."
+    (st.success if entry.get("kind") == "final" else st.info)(message)
 
 data = json.loads((run_to_show / "promos.json").read_text(encoding="utf-8"))
 summary = json.loads((run_to_show / "processing_summary.json").read_text(encoding="utf-8"))
@@ -317,7 +344,10 @@ if promos:
     if pack_path is None and PACK_DIR and input_name and (Path(PACK_DIR) / input_name).is_file():
         pack_path = Path(PACK_DIR) / input_name
     with st.expander("See the screenplay for this clip", expanded=blind):
-        if pack_path is None:
+        if pack_path is None and run_to_show.parent == DEMO_ROOT:
+            st.caption("The screenplay for this run is not published with the app, so its full transcript cannot be shown. "
+                       "The opening and final lines above come from the run's own results.")
+        elif pack_path is None:
             st.caption("Select the same pack in the sidebar to see the cues here, or set PROMO_PACK_DIR to the folder that holds it.")
         else:
             try:

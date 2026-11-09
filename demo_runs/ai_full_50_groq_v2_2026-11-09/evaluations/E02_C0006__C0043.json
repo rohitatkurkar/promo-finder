@@ -1,0 +1,26 @@
+{
+  "clip_key": "E02_C0006__C0043",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual contrast of a sneering face and a crying victim, combined with the specific, insulting dialogue 'far too plain' and 'far too silent', creates an immediate sense of interpersonal conflict and emotional intensity.",
+  "what_is_missing": "Context for why this interaction is happening or who these people are, but the raw emotion and hostility are sufficient to trigger a pause.",
+  "who_appears_involved": "SPEAKER A (Gerald), SPEAKER B (Juliana), SPEAKER C (Juliana's father), and SPEAKER D (Juliana's sister).",
+  "what_is_happening": "During a wedding ceremony, the groom rejects the bride in front of the congregation and her family, choosing another woman instead.",
+  "main_conflict": "The groom publicly humiliates and abandons the bride at the altar, and her father refuses to intervene or support her.",
+  "wants_to_know_next": "Will Juliana accept this humiliation or will she retaliate against Gerald and her family?",
+  "missing_context": "The specific reason why the other woman is considered a 'better choice' or the history between the characters prior to this moment.",
+  "verified_evidence": [
+    "Gerald has made his choice. Accept it, Juliana.",
+    "Promises change when a better choice appears.",
+    "You look like a kitchen maid who wandered into the wrong wedding."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

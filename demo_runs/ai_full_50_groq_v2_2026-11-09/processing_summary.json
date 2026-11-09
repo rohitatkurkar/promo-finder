@@ -1,0 +1,40 @@
+{
+  "mode": "ai_assisted",
+  "title": "I Married a Broken Soldier. He was a Duke",
+  "input_file": "I Married a Broken Soldier. He was a Duke-scripts (2) (1).zip",
+  "complete": true,
+  "stopped_because": null,
+  "episodes_in_pack": 50,
+  "episodes_selected": 50,
+  "episodes_processed": 50,
+  "episodes_pending_or_failed": [],
+  "failed_episodes": {},
+  "failed_evaluations": {},
+  "candidates_evaluated": 105,
+  "passed_all_gates": 33,
+  "gate_failure_counts": {
+    "hook_not_strong": 71,
+    "ending_resolves_the_conflict": 1
+  },
+  "rejected_pair_counts": {
+    "too_short": 199,
+    "too_long": 327,
+    "ending_before_hook": 273,
+    "hook_not_meaningful": 5
+  },
+  "model_issue_counts": {
+    "invented_quote": 2
+  },
+  "recommended_clips": 33,
+  "duplicates_removed": [],
+  "verification_errors": [],
+  "processing_seconds": 926.9,
+  "usage_totals": {
+    "model_calls": 48,
+    "cached_calls": 162,
+    "failed_calls": 8,
+    "input_tokens": 55343,
+    "output_tokens": 36852,
+    "total_tokens": 92195
+  }
+}

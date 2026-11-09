@@ -79,7 +79,9 @@ streamlit run app.py --server.address localhost
 
 Then open http://localhost:8501. On Windows: `.venv\Scripts\python.exe -m streamlit run app.py --server.address localhost`. The `--server.address localhost` part keeps the app reachable only from your own computer, which matters when you upload confidential scripts.
 
-The app opens on a bundled demo: Basic mode on the invented sample show, in `demo_runs/`. Your own runs appear above it under "Earlier runs".
+The app opens on the **final AI run on all 50 episodes** (33 promos), bundled in `demo_runs/`. "Earlier runs" also offers the initial AI trial (Episode 1 only) and a Basic mode run on the invented sample show, then any runs saved on the computer running the app. `demo_runs/catalog.json` sets their labels, order and which one opens first.
+
+Each bundled AI run holds only the files the interface reads, copied unchanged from the original run: `promos.json`, `processing_summary.json`, `promos.csv`, `report.md`, the blank review sheet, and the evaluations of the recommended clips. Model replies, logs, usage records, per-episode files, rejected candidates and the screenplay itself are left out, so the full transcript is only available for the sample show run. No run on a subset such as Episodes 10 to 20 exists, so none is shown.
 
 Optional settings, set in the shell before starting:
 
@@ -104,7 +106,8 @@ How the hosted app behaves:
 
 - **Basic mode, the demo, transcripts and human review** need no key.
 - **AI assisted mode** needs the access password from the secrets. Without a password in the secrets it stays off, so nobody with the link can spend the model quota. Each run is limited to `AI_MAX_EPISODES` episodes.
-- **Storage is temporary.** Runs and reviews saved on the hosted app are wiped when it restarts or sleeps. Download reviews with the export buttons to keep them.
+- **Storage is temporary.** Runs and reviews saved on the hosted app are wiped when it restarts, when it sleeps (after 12 hours without visitors) and on every redeploy, because Community Cloud restarts from a fresh copy of the repository. Download reviews with the export buttons to keep them.
+- **Storage is shared.** Everyone using the hosted app sees the same saved runs and reviews. With blind review mode off, the comparison table shows every reviewer's ratings and comments, and runs other visitors made appear under "Earlier runs".
 - **Uploads go to the host.** A ZIP uploaded to the hosted app is sent to Streamlit's servers, and in AI assisted mode to the model provider. Do not upload confidential scripts to a public app.
 
 ## Human review
@@ -165,9 +168,10 @@ python run.py reference-check --reference filled_sheet.csv --run outputs/ai_run 
 
 Screenplay packs may be confidential.
 
-- This repository holds no real screenplay content. `sample_input/` is an invented show.
+- The screenplay pack itself is not in this repository. `sample_input/` is an invented show.
+- **The two bundled AI runs in `demo_runs/` quote the real screenplay**: the show title, the opening and final lines of each promo, character names, and the models' short descriptions of each clip. They were included on purpose, for the public demo. The confidentiality scan below reports them; that is expected.
 - `.gitignore` excludes `.env`, `outputs/`, `inputs/`, `private/` and ZIP files other than the sample.
-- Result files quote the screenplay, so keep them out of public places.
+- Other result files quote the screenplay too, so keep them out of public places.
 - Keys are read only from `.env`, or on a hosted app from its secrets, and are removed from anything saved or printed.
 - Started with `--server.address localhost`, the interface only accepts connections from your own computer. A hosted copy is public: do not upload confidential scripts to it.
 - Check a provider's data terms before sending it a confidential script. See `DESIGN_DECISIONS.md`.

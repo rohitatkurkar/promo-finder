@@ -1,0 +1,26 @@
+{
+  "clip_key": "E29_C0032__C0048",
+  "hook_rating": 4,
+  "what_grabs_attention": "The combination of a close-up on a terrified face and the specific, violent imagery of finding a corpse at the end of a rope creates an immediate sense of danger and mystery.",
+  "what_is_missing": "Context on who 'they' are or why the person is in danger, but the visual and auditory shock is sufficient to hook a viewer without prior knowledge.",
+  "who_appears_involved": "SPEAKER A, a woman in a silk gown, and SPEAKER B, a woman in an apron who mentions saving a Duchess and having a scarred soldier husband.",
+  "what_is_happening": "SPEAKER A is threatening SPEAKER B with death by hanging and asserting her dominance over her.",
+  "main_conflict": "SPEAKER A is punishing SPEAKER B for saving the Duchess and asserting that SPEAKER B's husband cannot protect her from 'Ashbrook'.",
+  "wants_to_know_next": "Who is Ashbrook and what will happen to SPEAKER B?",
+  "missing_context": "The identity of 'Ashbrook', the specific nature of the punishment or threat, and the relationship between the Duchess and the characters.",
+  "verified_evidence": [
+    "I am doing this because women like you forget their place.",
+    "You should have stayed forgotten.",
+    "What exactly do you think a penniless veteran can do against Ashbrook?"
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

@@ -1,0 +1,26 @@
+{
+  "clip_key": "E46_C0038__C0058",
+  "hook_rating": 4,
+  "what_grabs_attention": "The specific, archaic dialogue about 'Duchess' and 'Paper' combined with the sinister facial expression creates a strong hook of mystery and conflict.",
+  "what_is_missing": "Context for who 'girl' is or what 'paper' refers to, but the intrigue is sufficient to pause.",
+  "who_appears_involved": "SPEAKER A (a priest or church authority figure), SPEAKER B (a woman referred to as 'healer' and 'girl'), SPEAKER C (a woman leaning against an archway), and SPEAKER D (a man referred to as a Duke).",
+  "what_is_happening": "A priest is publicly challenging the validity of a Duke and his wife's marriage in a church, claiming it was performed without proper license or Crown blessing.",
+  "main_conflict": "The priest claims he has the power to annul the marriage because it lacked official church and Crown approval, while the Duke argues that a Duke's marriage is judged by the Crown's peerage court, not a parish priest.",
+  "wants_to_know_next": "Will the priest succeed in annulling the marriage, or will the Duke's claim about the peerage court hold up?",
+  "missing_context": "The specific history of how the marriage was performed, the identity of the 'frightened parishioner', and the exact legal standing of the 'peerage court' versus the church in this setting.",
+  "verified_evidence": [
+    "God did not marry you. A frightened parishioner did, without leave, without license, without the Crown's blessing!",
+    "And I have the power to undo in one hearing what took you three years to steal!",
+    "A Duke's marriage is judged by the Crown's peerage court, not by a parish priest's seal."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

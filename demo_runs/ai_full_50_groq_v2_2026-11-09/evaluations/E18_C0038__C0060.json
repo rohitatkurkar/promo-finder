@@ -1,0 +1,26 @@
+{
+  "clip_key": "E18_C0038__C0060",
+  "hook_rating": 4,
+  "what_grabs_attention": "The immediate physical danger of a ceiling collapsing and a character charging into a burning desk creates a high-stakes, chaotic visual that is hard to ignore.",
+  "what_is_missing": "Context on who these people are or why the desk is burning, but the physical action is self-contained enough to hook a viewer.",
+  "who_appears_involved": "A man (SPEAKER A) and a woman named Juliana (SPEAKER B), who is holding a leather ledger.",
+  "what_is_happening": "A man rescues a woman from a burning building, protecting her from falling debris and carrying her out through a shattered window.",
+  "main_conflict": "The characters are trapped in a collapsing, burning room and must escape before the structure falls on them.",
+  "wants_to_know_next": "Did they survive the fall from the window and what is the significance of the ledger?",
+  "missing_context": "The cause of the fire, the relationship between the two characters, and why the ledger is so important to Juliana.",
+  "verified_evidence": [
+    "Juliana, the ceiling is coming down!",
+    "It's my mother's!",
+    "Down!"
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

@@ -1,0 +1,26 @@
+{
+  "clip_key": "E16_C0014__C0048",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual of a person catching a swinging club in their bare hand is a clear, high-stakes physical action that stands out immediately.",
+  "what_is_missing": "Context on who these people are or why this is happening, but the physical feat is self-contained enough to hold attention briefly.",
+  "who_appears_involved": "SPEAKER E (named Alexander by SPEAKER D), SPEAKER D (a woman with injured hands), three thugs (SPEAKER A, B, C), and Gerald Harrington (named by SPEAKER A).",
+  "what_is_happening": "SPEAKER E violently defeats three thugs attacking SPEAKER D in a garden and forces one to reveal that Gerald Harrington hired them to destroy the garden.",
+  "main_conflict": "SPEAKER E fights off an ambush by three thugs hired by Gerald Harrington to destroy the garden and harm SPEAKER D.",
+  "wants_to_know_next": "Who is Gerald Harrington and why is he betraying SPEAKER D?",
+  "missing_context": "The relationship between SPEAKER D and Gerald Harrington, the reason for the attack, and the identity of SPEAKER E beyond the name Alexander.",
+  "verified_evidence": [
+    "SPEAKER A: \"Harrington! Gerald Harrington paid us!\"",
+    "SPEAKER A: \"We were only paid to destroy the garden, that's all!\"",
+    "SPEAKER D: \"Gerald...\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

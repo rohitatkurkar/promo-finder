@@ -5,3 +5,6 @@
 *.zip binary
 *.pdf binary
 *.png binary
+
+# Bundled run outputs are kept byte for byte as the runs wrote them.
+demo_runs/** -text

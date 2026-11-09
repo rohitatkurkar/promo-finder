@@ -1,0 +1,26 @@
+{
+  "clip_key": "E45_C0059__C0072",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual of a bishop entering with an armed officer and the line 'No one will bow yet' creates a clear sense of conflict and high stakes.",
+  "what_is_missing": "Context on who these people are or why this is happening, but the immediate tension is sufficient to hook a viewer.",
+  "who_appears_involved": "A Catholic Bishop holding a royal parchment, an armed Crown officer, a Priest, a man in a leather glove, and a woman clutching his hand.",
+  "what_is_happening": "A Bishop enters a cathedral to publicly declare that a recent marriage ceremony is invalid because it lacked a Crown license and proper authority.",
+  "main_conflict": "The Bishop is legally annulling a ducal marriage in front of the congregation, causing panic among the couple.",
+  "wants_to_know_next": "Will the Crown officer use his drawn sword to force the couple apart or arrest them?",
+  "missing_context": "The specific identities of the couple (other than the title 'Duchess of Ashburton' and the name 'Alexander Ashburton') and the reason the Bishop is present at this specific moment.",
+  "verified_evidence": [
+    "This ceremony was performed without a Crown marriage license, by a priest without authority to sanctify a ducal union.",
+    "Before the Crown, you are not Duchess of Ashburton.",
+    "You are not Alexander Ashburton's lawful wife."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

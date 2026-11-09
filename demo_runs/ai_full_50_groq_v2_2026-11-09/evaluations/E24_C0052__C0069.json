@@ -1,0 +1,26 @@
+{
+  "clip_key": "E24_C0052__C0069",
+  "hook_rating": 4,
+  "what_grabs_attention": "The sudden, aggressive physical action of thrusting a riding crop into someone's face and the explicit threat of punishment.",
+  "what_is_missing": "Context for why this is happening; it feels like a random clip from a drama or roleplay without a clear hook for a general audience.",
+  "who_appears_involved": "SPEAKER A (a dominant figure with a riding crop), SPEAKER B (an anxious subordinate), and SPEAKER C (a soot-covered servant hiding a remedy journal and antidote).",
+  "what_is_happening": "SPEAKER A threatens SPEAKER B and watches SPEAKER C scrub the hearth, while SPEAKER C secretly conceals her healing tools and vows to return as a healer.",
+  "main_conflict": "SPEAKER C is forced to act as a lowly servant under SPEAKER A's tyranny while secretly preparing to use her hidden healing abilities.",
+  "wants_to_know_next": "How will SPEAKER C reveal her identity as the healer and confront SPEAKER A?",
+  "missing_context": "The specific history between the characters, why SPEAKER C is hiding, and what the 'punishment' referenced by SPEAKER A entails.",
+  "verified_evidence": [
+    "SPEAKER A: \"That is where clever little servants belong.\"",
+    "SPEAKER C (voice heard, speaker not visible): \"Let her think I am only a maid.\"",
+    "SPEAKER C (voice heard, speaker not visible): \"I will return. You cannot stop the healer.\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

@@ -1,0 +1,26 @@
+{
+  "clip_key": "E04_C0012__C0050",
+  "hook_rating": 4,
+  "what_grabs_attention": "The immediate visual and verbal hostility of the insult combined with the close-up reaction shot creates a clear, self-contained moment of conflict.",
+  "what_is_missing": "Context on who these people are or why they are in a pew, but the raw aggression is sufficient to hook a viewer momentarily.",
+  "who_appears_involved": "SPEAKER A (a mocking figure), SPEAKER B (Lady Juliana, a woman in a white silk gown), SPEAKER C (a bearded warrior with scars and blue-green eyes), and a family group seated in a pew.",
+  "what_is_happening": "In a chapel, a warrior kneels before a scorned woman to propose marriage, defying the insults of her family and her own fear of being pitied.",
+  "main_conflict": "SPEAKER B rejects the proposal as pity and charity, while SPEAKER C insists it is a vow and a chance for her to stop standing alone.",
+  "wants_to_know_next": "Will SPEAKER B accept the ring and the vow, or will she reject him and remain alone?",
+  "missing_context": "The specific nature of the betrayal by SPEAKER B's family and the identity of the 'man as worthless' mentioned by SPEAKER A are not fully explained, though the family's hostility is clear.",
+  "verified_evidence": [
+    "If this is pity, take back your ring.",
+    "It is not pity, Lady Juliana.",
+    "It is a vow."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

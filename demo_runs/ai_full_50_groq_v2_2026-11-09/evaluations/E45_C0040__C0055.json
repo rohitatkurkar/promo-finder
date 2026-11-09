@@ -1,0 +1,25 @@
+{
+  "clip_key": "E45_C0040__C0055",
+  "hook_rating": 4,
+  "what_grabs_attention": "The immediate accusation of poisoning and torture is high-stakes and hostile, creating an instant conflict hook.",
+  "what_is_missing": "Visual context or reaction to verify if this is a real confrontation or a skit, which might make it feel like a generic drama trope.",
+  "who_appears_involved": "SPEAKER A, SPEAKER B, SPEAKER C, Mary, and a woman identified as Lady Juliana Ashcroft.",
+  "what_is_happening": "SPEAKER A publicly accuses SPEAKER B of harming his mother and wife, then reveals that Lady Juliana Ashcroft is his lawful wife and the Duchess of Ashburton.",
+  "main_conflict": "SPEAKER A confronts SPEAKER B for allegedly poisoning his mother and torturing his wife, while simultaneously asserting his marriage to Lady Juliana Ashcroft.",
+  "wants_to_know_next": "Why did SPEAKER B not know that the woman she tortured was SPEAKER A's wife, and what is the relationship between SPEAKER B and the newly revealed Duchess?",
+  "missing_context": "The prior relationship between SPEAKER A and SPEAKER B, the identity of the 'wife' who was tortured (if different from Juliana), and the reason for the public setting.",
+  "verified_evidence": [
+    "You poisoned my mother. You tortured my wife.",
+    "Lady Juliana Ashcroft is my lawful wife... and the Duchess of Ashburton!"
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

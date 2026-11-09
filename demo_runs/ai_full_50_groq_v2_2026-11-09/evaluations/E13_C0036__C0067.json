@@ -1,0 +1,26 @@
+{
+  "clip_key": "E13_C0036__C0067",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual of blood welling from deep puncture wounds on the hand is a strong visceral hook that triggers a pause.",
+  "what_is_missing": "Context for why the person is doing this or what the 'No' refers to, making it feel like a random injury rather than a narrative event.",
+  "who_appears_involved": "SPEAKER A (Juliana), SPEAKER B, SPEAKER C, SPEAKER D (Juliana's husband), and a Constable.",
+  "what_is_happening": "Juliana is forced to crawl through a thorn-filled garden to find a ring, while her husband screams for her to stop and is restrained by a Constable.",
+  "main_conflict": "Juliana must endure physical torture to find a ring in order to secure her husband's freedom.",
+  "wants_to_know_next": "Does Juliana successfully retrieve the ring, and is her husband actually freed?",
+  "missing_context": "The specific crime or reason for the husband's imprisonment, and the identity or authority of the people on the balcony.",
+  "verified_evidence": [
+    "Keep searching, Juliana. Your husband's freedom is somewhere in that garden.",
+    "Please... enough!",
+    "Her blood-smeared index finger brushes against a solid metallic object half-buried in the frozen dirt beneath a thorny branch."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 5,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

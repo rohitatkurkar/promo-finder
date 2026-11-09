@@ -1,0 +1,26 @@
+{
+  "clip_key": "E12_C0041__C0052",
+  "hook_rating": 4,
+  "what_grabs_attention": "The threat to shred a lady's hands and the transactional nature of the crime (withdrawing charges in exchange for violence) creates immediate tension and curiosity about the stakes.",
+  "what_is_missing": "Context on who these people are or why this is happening, but the immediate threat is clear enough to hook a viewer.",
+  "who_appears_involved": "SPEAKER A (a man with a whip), SPEAKER B (a man whispering threats), SPEAKER C (a man with a scarred hand), SPEAKER D (a woman named Juliana), and a Constable.",
+  "what_is_happening": "SPEAKER B threatens SPEAKER D with physical harm and her husband's execution to force her to comply with an unspecified demand, while SPEAKER C tries to protect her.",
+  "main_conflict": "SPEAKER B is coercing SPEAKER D into self-harm or compliance by threatening to hang her husband, SPEAKER C.",
+  "wants_to_know_next": "Will SPEAKER D submit to the threat, or will she find a way to save her husband without being hurt?",
+  "missing_context": "The specific nature of the 'charges' or the act SPEAKER D is being forced to perform is not stated, only that it involves her hands being 'shredded to ribbons'.",
+  "verified_evidence": [
+    "Do it, and we withdraw the charges.",
+    "Fail, or refuse, and your husband hangs from the gallows.",
+    "Juliana, no. Do not let them hurt you. I can handle the law."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 5,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 5,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

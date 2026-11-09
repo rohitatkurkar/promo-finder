@@ -1,0 +1,26 @@
+{
+  "clip_key": "E11_C0050__C0070",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual of someone violently overturning crates and the immediate, desperate plea to save 'mother's medicines' creates a clear, high-stakes conflict that is understandable without prior context.",
+  "what_is_missing": "It's a bit generic for a period drama or fantasy setting, but the physical action and emotional stakes are sufficient to hook a casual viewer.",
+  "who_appears_involved": "Speaker A (a woman), Speaker B (a person destroying property), Speaker C (a man in the doorway), and an unnamed soldier in the shadows.",
+  "what_is_happening": "Speaker B is ransacking a cottage while Speaker C accuses Speaker A of being a thief, prompting a hidden soldier to react with anger.",
+  "main_conflict": "Speaker A is being accused of theft by Speaker C while her home is being destroyed, and a soldier is being provoked into violence.",
+  "wants_to_know_next": "Will the soldier strike Speaker C, and what is the relationship between the soldier and Speaker A?",
+  "missing_context": "The identity of the soldier, the specific nature of the 'medicines' or items being destroyed, and the full history between Speaker A and Speaker C.",
+  "verified_evidence": [
+    "Speaker C: \"Stand aside. Look at this place. A perfect hiding hole for a thief.\"",
+    "Speaker A: \"You planted this accusation because you cannot bear that I am happy without you!\"",
+    "Speaker C: \"What is it, soldier? Going to strike a gentleman in front of his wife?\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 5,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

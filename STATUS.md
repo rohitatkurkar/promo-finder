@@ -215,6 +215,26 @@ Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on
 - **Fresh copy check:** the 60 files to publish were copied to a clean folder with no `.env`, and installed from `requirements.txt` into a new Python 3.11 environment. All 235 tests passed there, the app started, showed the demo and ran Basic mode.
 - **Scans:** no keys in the publishable files or in the whole Git history, except the deliberately fake test key in `tests/test_llm_client.py`. No private paths ever committed. The confidentiality scan is clean.
 
+## 4e. Genuine runs in the public demo (2026-11-09)
+
+**Done and tested locally. Not pushed: waiting for approval, because it publishes screenplay excerpts.**
+
+- **Bundled in `demo_runs/`:**
+  - the final AI run on all 50 episodes (`ai_full_50_groq_v2_2026-11-09`, 33 promos), which opens by default;
+  - the initial Episode 1 trial (`ai_trial_E01_groq_2026-11-08`, 2 promos);
+  - the existing Basic run on the invented sample show.
+  - No Episodes 10 to 20 run exists, so none was made or shown.
+- **What each AI run includes:** only the files the interface reads, copied byte for byte: `promos.json`, `processing_summary.json`, `promos.csv`, `report.md`, the blank review sheet, and the evaluations of the recommended clips (38 of 372 files for the final run, 7 of 26 for the trial). Model replies, logs, usage records, per-episode files, rejected candidates and the screenplay are left out.
+- **Transcripts:** without the screenplay, AI runs show a note instead of a transcript. The sample show run still has full transcripts.
+- **`demo_runs/catalog.json`:** sets the labels, order and default run.
+- **`app.py` changes:**
+  - the dropdown lists the bundled runs first, then saved runs labelled "Saved run: …", and opens on the default run;
+  - after "Find promos", a "Your latest run" entry shows the new run;
+  - each bundled run shows its own description, with the final run in green.
+- **Confidentiality:** the scan reports 73 items in the two AI runs (screenplay lines, character names, title). This is expected and is the cost of publishing them.
+- **Tests:** 243 passed (4 new app tests): the final run opens by default, every bundled run opens with its own results and evaluations, a new run is shown and the final run can be reopened, and a bundled run can be reviewed without changing its files.
+- **Hosted storage:** reviews and runs saved on the hosted app are lost on restart, after 12 hours asleep, and on every redeploy. They are shared by everyone using the app.
+
 ## 5. Two segment promos
 
 Existing pieces (`schema.py`):

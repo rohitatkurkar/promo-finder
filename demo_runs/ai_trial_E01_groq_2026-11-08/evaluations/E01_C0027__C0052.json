@@ -1,0 +1,26 @@
+{
+  "clip_key": "E01_C0027__C0052",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual contrast between a 'cruel triumph' face and a crying face, combined with the specific line 'Because he is marrying me,' creates an immediate, self-contained conflict that feels like a dramatic betrayal or twist.",
+  "what_is_missing": "Context on who 'he' is or why this is surprising, but the emotional stakes are high enough to warrant a pause.",
+  "who_appears_involved": "SPEAKER A (a woman), SPEAKER B (a woman in a white dress), and SPEAKER C (a man).",
+  "what_is_happening": "SPEAKER B discovers at her wedding that her fiancé, SPEAKER C, is marrying her sister, SPEAKER A, in a premeditated betrayal.",
+  "main_conflict": "SPEAKER B is heartbroken and enraged to learn that SPEAKER A and SPEAKER C conspired to humiliate her by calling off the wedding to marry each other.",
+  "wants_to_know_next": "How will SPEAKER B react to this public humiliation and what will she do next?",
+  "missing_context": "The specific relationship between the characters is implied (sisters/fiancés) but not explicitly stated with names, and the location is only identified as an altar/wedding setting.",
+  "verified_evidence": [
+    "Because he is marrying me.",
+    "You let me believe I was walking toward my husband!",
+    "Long enough to know he was never going to marry you."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 5,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

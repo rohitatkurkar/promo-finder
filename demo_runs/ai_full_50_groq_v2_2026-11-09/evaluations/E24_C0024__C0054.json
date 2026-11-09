@@ -1,0 +1,26 @@
+{
+  "clip_key": "E24_C0024__C0054",
+  "hook_rating": 4,
+  "what_grabs_attention": "The sudden, violent physical act of whipping someone and the immediate pain response is visually jarring and aggressive.",
+  "what_is_missing": "Context for why this is happening; it looks like a staged roleplay or drama clip which might feel performative or out of place without knowing the premise.",
+  "who_appears_involved": "SPEAKER A (a woman in a lilac dress and white gloves holding a riding crop), SPEAKER B (a woman in boots who is struck and ordered to clean), and SPEAKER C (a frightened woman who intervenes).",
+  "what_is_happening": "SPEAKER A violently disciplines SPEAKER B with a riding crop, asserts her dominance by ordering her to clean a soot-filled fireplace, and threatens SPEAKER C when she attempts to intervene.",
+  "main_conflict": "SPEAKER A is enforcing strict, abusive control over SPEAKER B and SPEAKER C through physical violence and verbal humiliation.",
+  "wants_to_know_next": "Will SPEAKER C be punished for her intervention, or will she be spared?",
+  "missing_context": "The specific relationship between the characters (e.g., why SPEAKER B is being punished, the identity of the 'Duchess' mentioned in the shot description, or the setting's historical period) is not explicitly stated in the dialogue.",
+  "verified_evidence": [
+    "SPEAKER A: \"You are a maid.\"",
+    "SPEAKER A: \"And certainly not a woman whose opinion matters.\"",
+    "SPEAKER A: \"Do you want the same punishment?\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

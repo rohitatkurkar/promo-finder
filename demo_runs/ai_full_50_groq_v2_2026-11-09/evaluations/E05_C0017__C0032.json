@@ -1,0 +1,26 @@
+{
+  "clip_key": "E05_C0017__C0032",
+  "hook_rating": 4,
+  "what_grabs_attention": "The line 'you are dead to the Ashcroft family' is a clear, hostile declaration of expulsion, paired with a visual of shock and heartbreak.",
+  "what_is_missing": "Context on who 'Ashcroft' is or why this is happening, but the immediate emotional stakes are high enough to trigger curiosity.",
+  "who_appears_involved": "SPEAKER A (a father figure), SPEAKER B (his daughter, holding a ledger), SPEAKER C (a woman in navy velvet), and a Mysterious Bearded Man.",
+  "what_is_happening": "SPEAKER A disowns SPEAKER B, and SPEAKER C seizes a ledger from SPEAKER B and throws it into the rain.",
+  "main_conflict": "SPEAKER B is being cast out of the Ashcroft family and stripped of her mother's ledger by SPEAKER A and SPEAKER C.",
+  "wants_to_know_next": "Will SPEAKER B retrieve the ledger, or is she permanently cut off from her family and inheritance?",
+  "missing_context": "The specific reason for the disownment, the relationship between SPEAKER C and the others, and the identity of the Mysterious Bearded Man.",
+  "verified_evidence": [
+    "From this moment, you are dead to the Ashcroft family.",
+    "Then you should have guarded it better.",
+    "Barbara, don't!"
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

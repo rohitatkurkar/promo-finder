@@ -1,0 +1,24 @@
+{
+  "note": "Runs bundled with the public demo, in dropdown order. Each folder holds the minimum files the interface needs, copied unchanged from the original run. 'default' is the run shown when the app opens.",
+  "default": "ai_full_50_groq_v2_2026-11-09",
+  "runs": [
+    {
+      "folder": "ai_full_50_groq_v2_2026-11-09",
+      "label": "Final AI run: all 50 episodes, 33 promos (final result)",
+      "kind": "final",
+      "description": "Final full-dataset run: AI assisted mode on all 50 episodes, 33 recommended promos, 0 verification errors. This is the submitted result. Run on 8 and 9 November 2026 with Groq (finder openai/gpt-oss-120b, evaluator qwen/qwen3.8-27b)."
+    },
+    {
+      "folder": "ai_trial_E01_groq_2026-11-08",
+      "label": "Initial AI trial: Episode 1 only",
+      "kind": "history",
+      "description": "Development history: the first real-model trial, Episode 1 only, run on 8 November 2026 to check the pipeline before the full run. Its two promos reappear unchanged in the final run."
+    },
+    {
+      "folder": "basic_sample_show",
+      "label": "Basic mode: invented sample show",
+      "kind": "sample",
+      "description": "A Basic mode run on the invented sample show that ships with the app. Its screenplay is included, so this run also shows full transcripts."
+    }
+  ]
+}

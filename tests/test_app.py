@@ -19,7 +19,7 @@ def app(tmp_path, monkeypatch):
 def test_start_page_explains_what_to_do(app):
     app.run()
     assert not app.exception
-    assert any("Find promos" in item.value for item in app.info)
+    assert any("click Find promos" in item.value for item in app.success)
     assert app.title[0].value == "Promo Finder"
 
 
@@ -126,12 +126,76 @@ def test_blind_mode_hides_the_ai_judgement(app):
     assert not {"JSON", "CSV", "Report", "Blank review sheet", "Reviews CSV", "Reviews JSON"} & set(labels)  # They hold AI scores.
 
 
-def test_the_bundled_demo_shows_before_any_run(app):
+def _catalog():
+    return json.loads((ROOT / "demo_runs" / "catalog.json").read_text(encoding="utf-8"))
+
+
+def _open_run_box(app):
+    return next(box for box in app.sidebar.selectbox if box.label == "Open a run")
+
+
+def test_the_final_run_opens_by_default(app):
     app.run()
     assert not app.exception
-    assert any("precomputed demo" in item.value for item in app.info)
-    assert any("Results" in item.value for item in app.header)
+    catalog = _catalog()
+    final = next(entry for entry in catalog["runs"] if entry["folder"] == catalog["default"])
+    assert final["kind"] == "final"
+    assert _open_run_box(app).value == final["label"]
+    assert any("Final full-dataset run" in item.value for item in app.success)
+    assert app.metric[0].value == "50 of 50" and app.metric[1].value == "33"
     assert any(box.label == "Choose a clip" for box in app.selectbox)
+
+
+def test_every_bundled_run_can_be_opened_and_shows_its_own_results(app):
+    app.run()
+    catalog = _catalog()
+    labels = [entry["label"] for entry in catalog["runs"]]
+    assert _open_run_box(app).options[:len(labels)] == labels  # Catalog order, final run first.
+    for entry in catalog["runs"]:
+        folder = ROOT / "demo_runs" / entry["folder"]
+        data = json.loads((folder / "promos.json").read_text(encoding="utf-8"))
+        summary = json.loads((folder / "processing_summary.json").read_text(encoding="utf-8"))
+        _open_run_box(app).set_value(entry["label"]).run()
+        assert not app.exception, entry["folder"]
+        assert any(entry["description"][:40] in item.value for item in list(app.success) + list(app.info))
+        assert app.metric[0].value == f"{summary['episodes_processed']} of {summary['episodes_in_pack']}"
+        assert app.metric[1].value == str(len(data["promos"]))
+        chooser = next(box for box in app.selectbox if box.label == "Choose a clip")
+        assert len(chooser.options) == len(data["promos"])
+        assert chooser.options[0].startswith(f"1. {data['promos'][0]['promo_id']}")
+        ranking = next(frame.value for frame in app.dataframe if "Rank" in frame.value.columns and "Score" in frame.value.columns)
+        assert list(ranking["ID"]) == [p["promo_id"] for p in data["promos"]]
+        assert any(item.value == "Human review compared with AI" for item in app.subheader)
+        if data["selection_method"] == "ai_assisted":
+            first = data["promos"][0]
+            evaluation = json.loads((folder / "evaluations" / f"{first['clip_key']}.json").read_text(encoding="utf-8"))
+            assert evaluation["hook_rating"] == first["hook"]["rating_out_of_5"]
+            assert any("not published with the app" in item.value for item in app.caption)
+
+
+def test_a_new_run_is_shown_and_the_final_run_can_be_reopened(app):
+    _run_sample(app)
+    assert _open_run_box(app).value == "Your latest run"
+    assert app.metric[0].value == "3 of 3"
+    final = next(entry for entry in _catalog()["runs"] if entry["kind"] == "final")
+    _open_run_box(app).set_value(final["label"]).run()
+    assert not app.exception and app.metric[0].value == "50 of 50"
+
+
+def test_a_bundled_run_can_be_reviewed_without_changing_its_files(app, tmp_path):
+    app.run()
+    folder = ROOT / "demo_runs" / _catalog()["default"]
+    before = {p.name: p.read_bytes() for p in folder.rglob("*") if p.is_file()}
+    app.text_input(key="reviewer").input("demo_reviewer").run()
+    radios = _review_radios(app)
+    for label in ("Hook quality (1 to 5)", "Cliffhanger quality (1 to 5)", "Clarity (1 to 5)", "Overall quality (1 to 5)"):
+        radios[label].set_value(3)
+    radios["Would publish?"].set_value("No")
+    _save_button(app).click().run()
+    assert not app.exception and any("Review saved" in item.value for item in app.success)
+    saved = [json.loads(line) for line in (tmp_path / "outputs" / "human_reviews" / "human_reviews.jsonl").read_text(encoding="utf-8").splitlines()]
+    assert saved[0]["run_id"] == folder.name and saved[0]["reviewer"] == "demo_reviewer"
+    assert {p.name: p.read_bytes() for p in folder.rglob("*") if p.is_file()} == before
 
 
 def _choose_ai(app, secrets):

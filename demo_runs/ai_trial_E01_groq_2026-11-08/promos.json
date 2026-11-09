@@ -1,0 +1,171 @@
+{
+  "schema_version": "1.0",
+  "selection_method": "ai_assisted",
+  "title": "I Married a Broken Soldier. He was a Duke",
+  "promos": [
+    {
+      "schema_version": "1.0",
+      "promo_id": "P0001",
+      "clip_key": "E01_C0027__C0052",
+      "global_rank": 1,
+      "first_post_recommendation": true,
+      "first_post_reason": "Highest ranked clip that also introduces the show: rated 5 of 5 for premise fit with low spoiler risk. Core betrayal scene A stronger shock that needs earlier episodes can come later, once viewers know the premise.",
+      "segments": [
+        {
+          "episode": 1,
+          "start_seconds": 39.0,
+          "end_seconds": 79.0,
+          "start_timestamp": "00:39.00",
+          "end_timestamp": "01:19.00",
+          "start_cue_id": "E01_C0026",
+          "end_cue_id": "E01_C0051",
+          "boundary_adjustments": [
+            "Start moved 0.10s earlier to the shot change at E01_C0026.",
+            "End moved 0.50s later to the shot change at E01_C0051."
+          ]
+        }
+      ],
+      "total_duration_seconds": 40.0,
+      "hook": {
+        "cue_ids": [
+          "E01_C0027"
+        ],
+        "evidence": "Because he is marrying me.",
+        "strength": "strong",
+        "rating_out_of_5": 4.0,
+        "rated_by": "blind hook test",
+        "within_first_three_seconds": true,
+        "seconds_from_clip_start": 0.1,
+        "reason": "The visual contrast between a 'cruel triumph' face and a crying face, combined with the specific line 'Because he is marrying me,' creates an immediate, self-contained conflict that feels like a dramatic betrayal or twist."
+      },
+      "cliffhanger": {
+        "cue_ids": [
+          "E01_C0052"
+        ],
+        "evidence": "Long enough to know he was never going to marry you.",
+        "strength": "strong",
+        "rating_out_of_5": 4.0,
+        "rated_by": "blind cold viewer",
+        "resolves_conflict": false,
+        "reason": "How will SPEAKER B react to this public humiliation and what will she do next?"
+      },
+      "cold_viewer_check": {
+        "result": "pass",
+        "main_conflict_understood": true,
+        "unresolved_question_understood": true,
+        "who_appears_involved": "SPEAKER A (a woman), SPEAKER B (a woman in a white dress), and SPEAKER C (a man).",
+        "what_is_happening": "SPEAKER B discovers at her wedding that her fiancé, SPEAKER C, is marrying her sister, SPEAKER A, in a premeditated betrayal.",
+        "main_conflict": "SPEAKER B is heartbroken and enraged to learn that SPEAKER A and SPEAKER C conspired to humiliate her by calling off the wedding to marry each other.",
+        "viewer_wants_to_know": "How will SPEAKER B react to this public humiliation and what will she do next?",
+        "verified_evidence_lines": [
+          "Because he is marrying me.",
+          "You let me believe I was walking toward my husband!",
+          "Long enough to know he was never going to marry you."
+        ],
+        "unverified_evidence_lines": [],
+        "missing_context": "The specific relationship between the characters is implied (sisters/fiancés) but not explicitly stated with names, and the location is only identified as an altar/wedding setting."
+      },
+      "independent_understanding_explanation": "Blind viewer's reading of the conflict: SPEAKER B is heartbroken and enraged to learn that SPEAKER A and SPEAKER C conspired to humiliate her by calling off the wedding to marry each other. What could still confuse them: The specific relationship between the characters is implied (sisters/fiancés) but not explicitly stated with names, and the location is only identified as an altar/wedding setting.",
+      "score_breakdown": {
+        "hook": 75.0,
+        "ending": 75.0,
+        "understanding": 100.0,
+        "emotion": 100.0,
+        "continuity": 100.0,
+        "duration": 100.0
+      },
+      "total_score": 85.0,
+      "overall_explanation": "The visual contrast between a 'cruel triumph' face and a crying face, combined with the specific line 'Because he is marrying me,' creates an immediate, self-contained conflict that feels like a dramatic betrayal or twist. Leaves open: How will SPEAKER B react to this public humiliation and what will she do next?",
+      "spoiler_risk": "low",
+      "warnings": [],
+      "selection_method": "ai_assisted",
+      "human_review": {
+        "status": "not_reviewed",
+        "rating": null,
+        "reviewer": null
+      }
+    },
+    {
+      "schema_version": "1.0",
+      "promo_id": "P0002",
+      "clip_key": "E01_C0041__C0082",
+      "global_rank": 2,
+      "first_post_recommendation": false,
+      "first_post_reason": "",
+      "segments": [
+        {
+          "episode": 1,
+          "start_seconds": 60.1,
+          "end_seconds": 119.5,
+          "start_timestamp": "01:00.10",
+          "end_timestamp": "01:59.50",
+          "start_cue_id": "E01_C0041",
+          "end_cue_id": "E01_C0081",
+          "boundary_adjustments": [
+            "End moved 0.50s later to the shot change at E01_C0081."
+          ]
+        }
+      ],
+      "total_duration_seconds": 59.4,
+      "hook": {
+        "cue_ids": [
+          "E01_C0041"
+        ],
+        "evidence": "I changed my mind.",
+        "strength": "strong",
+        "rating_out_of_5": 4.0,
+        "rated_by": "blind hook test",
+        "within_first_three_seconds": true,
+        "seconds_from_clip_start": 0.0,
+        "reason": "The extreme close-up of a furious, weeping face combined with the abrupt, contradictory statement 'I changed my mind' creates immediate visual and narrative tension."
+      },
+      "cliffhanger": {
+        "cue_ids": [
+          "E01_C0082"
+        ],
+        "evidence": "So that is what I was worth to you?",
+        "strength": "strong",
+        "rating_out_of_5": 4.0,
+        "rated_by": "blind cold viewer",
+        "resolves_conflict": false,
+        "reason": "Will SPEAKER B accept this rejection or fight back against her family?"
+      },
+      "cold_viewer_check": {
+        "result": "pass",
+        "main_conflict_understood": true,
+        "unresolved_question_understood": true,
+        "who_appears_involved": "SPEAKER A (a man), SPEAKER B (a weeping woman), SPEAKER C (a condescending woman named Clarissa), SPEAKER D (a severe woman), and an elderly father.",
+        "what_is_happening": "A woman is publicly humiliated and rejected by her family and fiancé in favor of her sister during what appears to be a wedding or formal ceremony.",
+        "main_conflict": "SPEAKER B is betrayed by her fiancé and family, who prefer her sister Clarissa, leaving her isolated and rejected.",
+        "viewer_wants_to_know": "Will SPEAKER B accept this rejection or fight back against her family?",
+        "verified_evidence_lines": [
+          "\"Long enough to know he was never going to marry you.\"",
+          "\"Clarissa knows how to carry herself.\"",
+          "\"You are the daughter people tolerate because they have to.\""
+        ],
+        "unverified_evidence_lines": [],
+        "missing_context": "The specific relationship between SPEAKER D and the others (likely a mother or matriarch), the exact nature of the event (wedding vs. engagement party), and why the father is present but silent."
+      },
+      "independent_understanding_explanation": "Blind viewer's reading of the conflict: SPEAKER B is betrayed by her fiancé and family, who prefer her sister Clarissa, leaving her isolated and rejected. What could still confuse them: The specific relationship between SPEAKER D and the others (likely a mother or matriarch), the exact nature of the event (wedding vs. engagement party), and why the father is present but silent.",
+      "score_breakdown": {
+        "hook": 75.0,
+        "ending": 75.0,
+        "understanding": 100.0,
+        "emotion": 75.0,
+        "continuity": 100.0,
+        "duration": 40.0,
+        "penalty_repetition": -8.0
+      },
+      "total_score": 71.5,
+      "overall_explanation": "The extreme close-up of a furious, weeping face combined with the abrupt, contradictory statement 'I changed my mind' creates immediate visual and narrative tension. Leaves open: Will SPEAKER B accept this rejection or fight back against her family?",
+      "spoiler_risk": "low",
+      "warnings": [],
+      "selection_method": "ai_assisted",
+      "human_review": {
+        "status": "not_reviewed",
+        "rating": null,
+        "reviewer": null
+      }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+{
+  "clip_key": "E28_C0053__C0073",
+  "hook_rating": 4,
+  "what_grabs_attention": "The physical aggression of yanking a necklace off someone's neck and the insulting dialogue ('gutter rat') create an immediate sense of conflict and hostility.",
+  "what_is_missing": "Context for why this is happening or who these people are, which might make it feel like a random skit rather than a compelling narrative hook.",
+  "who_appears_involved": "SPEAKER A (a woman identified as Lady Juliana Ashcroft, referred to as a 'witch' and 'gutter rat'), SPEAKER B (a woman who yanks a locket and reads a book), and a guard (mentioned in action description).",
+  "what_is_happening": "SPEAKER B violently removes a locket from SPEAKER A's neck, discards it, and then reveals SPEAKER A's true identity by reading a name from a book.",
+  "main_conflict": "SPEAKER B is asserting dominance over SPEAKER A by stripping her of personal items and exposing her secret identity as Lady Juliana Ashcroft.",
+  "wants_to_know_next": "What will SPEAKER B do with SPEAKER A now that her identity is exposed?",
+  "missing_context": "The specific relationship between SPEAKER A and SPEAKER B, the reason for the 'gallows' reference, and the nature of the 'secret identity' beyond the name.",
+  "verified_evidence": [
+    "SPEAKER B: \"Where did a gutter rat like you find a silver locket?\"",
+    "SPEAKER A: \"It belonged to my mother!\"",
+    "SPEAKER B: \"Lady Juliana Ashcroft.\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

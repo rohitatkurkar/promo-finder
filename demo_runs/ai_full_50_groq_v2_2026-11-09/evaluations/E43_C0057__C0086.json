@@ -1,0 +1,26 @@
+{
+  "clip_key": "E43_C0057__C0086",
+  "hook_rating": 4,
+  "what_grabs_attention": "The immediate visual of a confrontation and the specific, high-stakes accusation of betrayal ('sold my men to the enemy') creates a clear narrative hook.",
+  "what_is_missing": "Context on who these people are or why this matters to a random viewer, but the intensity is sufficient to trigger a pause.",
+  "who_appears_involved": "SPEAKER A (Duke Alexander Ashburn), SPEAKER B (an accused man), SPEAKER C (a reader of documents), SPEAKER D (a woman in a bridal veil), SPEAKER E (a stern British man), and Lord Sterling.",
+  "what_is_happening": "SPEAKER A confronts SPEAKER B in a cathedral, revealing that he is alive and that his death was faked to steal his title, while Lord Sterling attempts to flee.",
+  "main_conflict": "SPEAKER A accuses SPEAKER B of selling his men and taking his title based on a false death report, while SPEAKER B blames Lord Sterling for the report.",
+  "wants_to_know_next": "Will SPEAKER E stop Lord Sterling from escaping, and what will SPEAKER A do to SPEAKER B?",
+  "missing_context": "The specific nature of the 'ambush' and the relationship between SPEAKER A and SPEAKER D (the bride) are not explained.",
+  "verified_evidence": [
+    "You sold my men to the enemy.",
+    "Official death confirmation was filed three months after the ambush.",
+    "Going somewhere, Lord Sterling?"
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

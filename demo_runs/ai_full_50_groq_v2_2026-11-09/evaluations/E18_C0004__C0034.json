@@ -1,0 +1,25 @@
+{
+  "clip_key": "E18_C0004__C0034",
+  "hook_rating": 4,
+  "what_grabs_attention": "The sudden physical reaction of coughing and the visual cue of orange light under the door suggest an immediate, life-threatening emergency like a fire.",
+  "what_is_missing": "Context on who Alexander is or why this is happening, but the immediate danger is self-evident.",
+  "who_appears_involved": "SPEAKER A (named Juliana) and SPEAKER B (named Alexander), who are in a burning building.",
+  "what_is_happening": "SPEAKER B rescues SPEAKER A from a bedroom engulfed in fire and attempts to lead her to safety, but she stops to save a burning book.",
+  "main_conflict": "SPEAKER A wants to save a specific ledger from the fire, while SPEAKER B insists they must leave immediately to survive.",
+  "wants_to_know_next": "Will SPEAKER A be forced to leave the ledger, or will she risk her life to retrieve it?",
+  "missing_context": "The relationship between the two characters, the origin of the fire, and the specific significance of the herbal ledger.",
+  "verified_evidence": [
+    "SPEAKER A: \"The ledger!\"",
+    "SPEAKER B: \"Leave it!\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

@@ -1,0 +1,26 @@
+{
+  "clip_key": "E11_C0016__C0052",
+  "hook_rating": 4,
+  "what_grabs_attention": "The immediate accusation of theft and the visible shift to hostile anger create a clear, high-stakes conflict that is understandable without prior context.",
+  "what_is_missing": "The specific identity of the characters or the setting, but this is not necessary for the initial hook to work.",
+  "who_appears_involved": "SPEAKER A (accuser), SPEAKER B (defender, wife of Alexander), SPEAKER C (Alexander, husband), SPEAKER D (constable)",
+  "what_is_happening": "SPEAKER A accuses SPEAKER C of stealing a gold pocket watch, leading to a confrontation where SPEAKER D searches the cottage while SPEAKER B protests.",
+  "main_conflict": "SPEAKER A's accusation of theft against SPEAKER C and the subsequent forced search of the home by SPEAKER D.",
+  "wants_to_know_next": "Does the constable find the gold pocket watch during the search?",
+  "missing_context": "The relationship between SPEAKER A and the couple, the value or significance of the watch, and why SPEAKER C agrees to the search despite the risk.",
+  "verified_evidence": [
+    "Your husband stole my gold pocket watch!",
+    "Then a search will settle the matter.",
+    "Stop! Those are my mother's medicines!"
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

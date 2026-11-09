@@ -1,0 +1,26 @@
+{
+  "clip_key": "E39_C0022__C0042",
+  "hook_rating": 4,
+  "what_grabs_attention": "A guy suddenly jumps off a cart and tackles a guard against a wheel.",
+  "what_is_missing": "Context on why this is happening or who these people are.",
+  "who_appears_involved": "Two loyalist fighters, two royal guards, a bearded man named Alexander Ashwin, and a Duke mentioned in dialogue.",
+  "what_is_happening": "Two men incapacitate guards to clear a path, after which a scarred man cuts his hair and beard and puts on a ducal uniform, declaring his return.",
+  "main_conflict": "A man named Alexander Ashwin is emerging from three years of hiding to reclaim his identity and power.",
+  "wants_to_know_next": "Who is the Duke, and what will Alexander Ashwin do now that he has returned?",
+  "missing_context": "The specific political situation, why the guards were there, and the relationship between Alexander Ashwin and the Duke.",
+  "verified_evidence": [
+    "SPEAKER C: \"They buried Alexander Ashwin three years ago.\"",
+    "SPEAKER C: \"Today, he comes home.\"",
+    "SPEAKER A: \"Tell the Duke.\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

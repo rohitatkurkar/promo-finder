@@ -1,0 +1,26 @@
+{
+  "clip_key": "E33_C0075__C0097",
+  "hook_rating": 4,
+  "what_grabs_attention": "The extreme close-up on the eyes and the specific, accusatory phrase 'That is witchcraft' creates a moment of high tension and social conflict.",
+  "what_is_missing": "Context for why this is being said, who is being accused, and the immediate consequence of the statement.",
+  "who_appears_involved": "SPEAKER A, SPEAKER B, Toby, and Lady Juliana",
+  "what_is_happening": "SPEAKER A forces SPEAKER B to testify that Lady Juliana is a witch to save her brother Toby, despite SPEAKER B's protests that Juliana saved him.",
+  "main_conflict": "SPEAKER A coerces SPEAKER B into giving false testimony against Lady Juliana to secure Toby's safety.",
+  "wants_to_know_next": "Will SPEAKER B actually testify against Lady Juliana at the trial?",
+  "missing_context": "The specific relationship between SPEAKER A and the magistrate, the nature of the 'witchcraft' accusation, and why SPEAKER A has the power to dictate testimony.",
+  "verified_evidence": [
+    "That is witchcraft.",
+    "I have already written the story for you.",
+    "And now... you will save your brother."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 5,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

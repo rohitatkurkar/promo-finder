@@ -1,0 +1,26 @@
+{
+  "clip_key": "E33_C0041__C0066",
+  "hook_rating": 4,
+  "what_grabs_attention": "A woman is crying and begging someone called 'my Lord' to spare a seven-year-old, which implies immediate, high-stakes danger.",
+  "what_is_missing": "The context of who 'my Lord' is and what the threat is, but the emotional intensity is sufficient to trigger a pause.",
+  "who_appears_involved": "SPEAKER A (a terrified servant) and SPEAKER B (a cold, authoritative figure referred to as 'my Lord')",
+  "what_is_happening": "SPEAKER B interrogates a weeping SPEAKER A about a woman who placed herbs around a seven-year-old boy and spoke words from a book.",
+  "main_conflict": "SPEAKER B is trying to force SPEAKER A to admit that the woman was performing a ritual or chanting rather than praying.",
+  "wants_to_know_next": "Will SPEAKER A break and admit to the chanting, or will she maintain it was prayer?",
+  "missing_context": "The specific nature of the 'book' or the 'words', the relationship between the woman and the boy, and why SPEAKER B is so interested in this specific incident.",
+  "verified_evidence": [
+    "SPEAKER B: \"Praying... or chanting?\"",
+    "SPEAKER A: \"Please, my Lord... he is only seven!\"",
+    "SPEAKER B: \"The truth.\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

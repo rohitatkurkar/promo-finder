@@ -1,0 +1,26 @@
+{
+  "clip_key": "E10_C0004__C0038",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual of a man standing in the doorway with a blood-soaked chest and the woman's terrified reaction create an immediate, high-stakes conflict.",
+  "what_is_missing": "Context for why this is happening, but the visual shock is sufficient to hook a viewer without prior knowledge.",
+  "who_appears_involved": "SPEAKER A (a woman) and SPEAKER B (a man named Alexander, who is injured).",
+  "what_is_happening": "A man named Alexander bursts into a cottage with a severe chest wound, and a woman insists on treating him despite his attempts to downplay the injury.",
+  "main_conflict": "The man tries to hide the severity of his battle injuries, while the woman forces him to reveal the extent of his suffering.",
+  "wants_to_know_next": "What caused the severe battle scars and fresh lacerations on the man's chest?",
+  "missing_context": "The specific nature of the conflict that injured the man (e.g., war, duel, crime) and the history of the relationship between the two characters.",
+  "verified_evidence": [
+    "SPEAKER B: \"A cut from the tenant fields.\"",
+    "SPEAKER A: \"Then removing your shirt should not trouble you.\"",
+    "SPEAKER A: \"Your scars disagree.\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

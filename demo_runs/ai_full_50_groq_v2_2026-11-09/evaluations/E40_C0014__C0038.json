@@ -1,0 +1,26 @@
+{
+  "clip_key": "E40_C0014__C0038",
+  "hook_rating": 4,
+  "what_grabs_attention": "The line 'She won't be seeing anything for long' combined with the cold expression suggests immediate, violent harm or a serious threat.",
+  "what_is_missing": "Context on who 'she' is or why this is happening, but the threat itself is clear enough to trigger curiosity.",
+  "who_appears_involved": "SPEAKER A, SPEAKER B, SPEAKER C, SPEAKER D, SPEAKER E, and a person named Juliana.",
+  "what_is_happening": "A group of nobles attends a wedding in a cathedral while plotting to kill a woman named Juliana by sunset.",
+  "main_conflict": "The conspirators intend to murder Juliana, whom they call a witch, during the wedding ceremony.",
+  "wants_to_know_next": "How do the conspirators plan to kill Juliana during the wedding?",
+  "missing_context": "The relationship between the speakers and Juliana, the specific method of the planned murder, and the identity of the bride and groom.",
+  "verified_evidence": [
+    "And its witch will be dead.",
+    "She won't be seeing anything for long.",
+    "By sunset, Ashburgh will have its new Duke and Duchess."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 3,
+  "plays_as_one_moment": 4,
+  "issues": [],
+  "gate_failures": []
+}

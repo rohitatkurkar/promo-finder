@@ -1,0 +1,26 @@
+{
+  "clip_key": "E35_C0041__C0059",
+  "hook_rating": 4,
+  "what_grabs_attention": "The word 'traitor' combined with a close-up of a woman's horrified expression creates a moment of high emotional stakes and conflict.",
+  "what_is_missing": "Context for who the traitor is or why this matters, but the immediate visual and verbal shock is sufficient to trigger a pause.",
+  "who_appears_involved": "A mother and her son (SPEAKER A and SPEAKER B), plus unnamed men who ambushed the son and others who wanted the mother to believe he was dead.",
+  "what_is_happening": "A son reveals to his mother that he survived an ambush where his men were killed, and that someone deliberately hid his survival from her.",
+  "main_conflict": "The son's survival was concealed by an unknown party, leading to a confrontation with his mother about who is responsible.",
+  "wants_to_know_next": "Who specifically wanted the mother to believe the son was dead?",
+  "missing_context": "The identity of the 'someone' or group responsible for the ambush and the cover-up, as well as the specific relationship or political context between the son and the antagonists.",
+  "verified_evidence": [
+    "Because someone wanted you to believe I was dead.",
+    "My men were slaughtered.",
+    "I survived because the men who came looking for me believed I was already dead."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

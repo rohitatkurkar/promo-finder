@@ -1,0 +1,25 @@
+{
+  "clip_key": "E26_C0026__C0049",
+  "hook_rating": 4,
+  "what_grabs_attention": "The claim of being poisoned by the Duke and Duchess is a high-stakes, bizarre conspiracy theory that is immediately shocking and strange.",
+  "what_is_missing": "Context on who 'Rupert and Catherine' are or why this is happening, but the sheer absurdity and danger of the statement is enough to hook a viewer.",
+  "who_appears_involved": "A Duchess (Speaker A) and a maid (Speaker B), with Rupert and Catherine mentioned as potential poisoners.",
+  "what_is_happening": "The Duchess, believing she is being poisoned, confronts her maid after noticing a distinctive signet ring on her finger.",
+  "main_conflict": "The Duchess is in a state of delusional paranoia about poisoning, which is suddenly interrupted by her shock at recognizing the maid's ring.",
+  "wants_to_know_next": "Who is the maid, and why does the Duchess recognize her ring?",
+  "missing_context": "The identity of the maid, the history between the Duchess and the maid, and whether the Duchess is actually being poisoned or suffering from a mental break.",
+  "verified_evidence": [
+    "Rupert and Catherine want me dead. They are poisoning me in my own bed, aren't they?",
+    "Where... where... Where did you get this ring? Speak to me!"
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 5,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

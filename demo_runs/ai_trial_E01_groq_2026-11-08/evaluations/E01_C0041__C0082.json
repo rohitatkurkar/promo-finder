@@ -1,0 +1,26 @@
+{
+  "clip_key": "E01_C0041__C0082",
+  "hook_rating": 4,
+  "what_grabs_attention": "The extreme close-up of a furious, weeping face combined with the abrupt, contradictory statement 'I changed my mind' creates immediate visual and narrative tension.",
+  "what_is_missing": "Context for who is speaking, why the change of mind is significant, or what the 'hardened profile' character is reacting to.",
+  "who_appears_involved": "SPEAKER A (a man), SPEAKER B (a weeping woman), SPEAKER C (a condescending woman named Clarissa), SPEAKER D (a severe woman), and an elderly father.",
+  "what_is_happening": "A woman is publicly humiliated and rejected by her family and fiancé in favor of her sister during what appears to be a wedding or formal ceremony.",
+  "main_conflict": "SPEAKER B is betrayed by her fiancé and family, who prefer her sister Clarissa, leaving her isolated and rejected.",
+  "wants_to_know_next": "Will SPEAKER B accept this rejection or fight back against her family?",
+  "missing_context": "The specific relationship between SPEAKER D and the others (likely a mother or matriarch), the exact nature of the event (wedding vs. engagement party), and why the father is present but silent.",
+  "verified_evidence": [
+    "\"Long enough to know he was never going to marry you.\"",
+    "\"Clarissa knows how to carry herself.\"",
+    "\"You are the daughter people tolerate because they have to.\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

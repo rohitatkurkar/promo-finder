@@ -1,0 +1,26 @@
+{
+  "clip_key": "E24_C0017__C0037",
+  "hook_rating": 4,
+  "what_grabs_attention": "The mocking laughter and the specific, slightly archaic insult about a 'new maid' challenging 'physicians' creates a clear, immediate conflict.",
+  "what_is_missing": "Context on who the 'new maid' is or why this is a big deal, but the hostility is self-contained enough to be intriguing.",
+  "who_appears_involved": "SPEAKER A (a lady with a riding crop), SPEAKER B (a maid), and a Duchess (seen in the background).",
+  "what_is_happening": "SPEAKER A physically strikes and verbally humiliates SPEAKER B for attempting to treat a suffering Duchess against orders.",
+  "main_conflict": "SPEAKER B's moral objection to letting the Duchess suffer clashes with SPEAKER A's insistence on strict social hierarchy and obedience.",
+  "wants_to_know_next": "What happens when SPEAKER A leads SPEAKER B and the frightened person down the dark hallway?",
+  "missing_context": "The specific illness of the Duchess, the relationship between SPEAKER A and the Duchess, and the identity of the 'frightened someone' being led away.",
+  "verified_evidence": [
+    "SPEAKER A: \"Then let her suffer.\"",
+    "SPEAKER B: \"I cannot do that.\"",
+    "SPEAKER A: \"You are a maid.\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

@@ -1,0 +1,26 @@
+{
+  "clip_key": "E02_C0047__C0067",
+  "hook_rating": 4,
+  "what_grabs_attention": "The visual of a woman in a black velvet gown glaring with 'cold superiority' and the specific dialogue about being 'allowed to attend the wedding' creates a clear, immediate conflict.",
+  "what_is_missing": "Context on who Juliana is or why this is a big deal, but the hostility is self-contained enough to be intriguing.",
+  "who_appears_involved": "A matriarch in a black velvet gown (Speaker A), a man named Gerald (Speaker B), and a woman named Juliana (Speaker C).",
+  "what_is_happening": "Juliana is being publicly humiliated and told to leave a wedding by Gerald and his mother, but she stands her ground and exposes Gerald's betrayal to the congregation.",
+  "main_conflict": "Juliana confronts Gerald and his mother in front of the wedding guests, revealing that Gerald abandoned her for another woman's wealth and beauty.",
+  "wants_to_know_next": "How do Gerald and the wedding party react to Juliana's public accusation?",
+  "missing_context": "The identity of the bride or groom, the specific nature of the 'greater beauty and wealth' promise, and why Juliana was initially told to leave quietly.",
+  "verified_evidence": [
+    "You abandoned a woman who trusted you...",
+    "...because another woman promised you greater beauty and wealth.",
+    "Do not mistake my heartbreak for your victory, Gerald."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

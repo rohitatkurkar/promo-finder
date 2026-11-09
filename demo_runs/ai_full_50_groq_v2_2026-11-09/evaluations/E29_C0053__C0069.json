@@ -1,0 +1,25 @@
+{
+  "clip_key": "E29_C0053__C0069",
+  "hook_rating": 4,
+  "what_grabs_attention": "The violent physical action of being shoved into a dark cell and the immediate plea for help create a clear, high-stakes conflict that is visually and audibly distinct from typical content.",
+  "what_is_missing": "Context on who the character is or why this is happening, but the immediate physical threat is sufficient to hook a viewer without prior knowledge.",
+  "who_appears_involved": "SPEAKER A, guards, and a Duchess (mentioned).",
+  "what_is_happening": "SPEAKER A is violently thrown into a dark cell and screams that she is innocent because she saved the Duchess.",
+  "main_conflict": "SPEAKER A is imprisoned despite claiming she saved the Duchess, and her mother's ledger has been taken.",
+  "wants_to_know_next": "Why was SPEAKER A imprisoned if she saved the Duchess, and what is in her mother's ledger?",
+  "missing_context": "The identity of the Duchess, the nature of the 'healing' or 'saving', and the significance of the ledger are not explained.",
+  "verified_evidence": [
+    "SPEAKER A: \"I saved the Duchess!\"",
+    "SPEAKER A (voice heard, speaker not visible): \"They took my mother's ledger...\""
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 4,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}

@@ -1,0 +1,26 @@
+{
+  "clip_key": "E05_C0007__C0017",
+  "hook_rating": 4,
+  "what_grabs_attention": "The intense close-up and the specific, threatening dialogue about a family name and a church setting create a clear sense of immediate conflict.",
+  "what_is_missing": "Context on who these people are or why this matters, but the visual intensity and the direct threat are strong enough to hook a viewer momentarily.",
+  "who_appears_involved": "A man identified as 'Father' and a woman identified as his daughter, who is also a wife.",
+  "what_is_happening": "A father is disowning his daughter and revoking her inheritance immediately after her wedding.",
+  "main_conflict": "The father refuses to accept his daughter's marriage and cuts her off from the family and her wealth.",
+  "wants_to_know_next": "Will the daughter accept this disownment or fight back?",
+  "missing_context": "The reason for the father's anger is not stated, nor is the identity of the husband.",
+  "verified_evidence": [
+    "You will not leave this church carrying the Ashcroft name.",
+    "Your dowry is revoked.",
+    "From this moment, you are dead to the Ashcroft family."
+  ],
+  "unverified_evidence": [],
+  "conflict_understood": true,
+  "question_understood": true,
+  "clarity_rating": 5,
+  "ending_rating": 4,
+  "ending_resolves_conflict": false,
+  "emotional_impact": 4,
+  "plays_as_one_moment": 5,
+  "issues": [],
+  "gate_failures": []
+}
