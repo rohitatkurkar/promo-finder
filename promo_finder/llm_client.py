@@ -471,9 +471,22 @@ class LLMClient:
                 extra_note = "\n\nYour previous reply was not valid JSON. Reply with only one JSON object."
                 continue
 
+            if finish_reason == "length" and not length_retry_used:
+                # The reply hit the output limit but still parsed. A model that reasons first can run out of
+                # room and close the JSON early, dropping whole fields, so ask once more with double the room.
+                self.ledger.add({**base_record, "cached": False, "status": "failed", "error_kind": "cut_off",
+                                 "error_detail": "Reply reached the output limit; asked again with more room",
+                                 "finish_reason": finish_reason, "input_tokens": input_tokens,
+                                 "output_tokens": output_tokens, "latency_seconds": round(self.clock() - started, 2),
+                                 "attempts": attempts})
+                length_retry_used = True
+                output_limit = self.config.max_output_tokens * 2
+                continue
+
             elapsed = round(self.clock() - started, 2)
             self.ledger.add({**base_record, "cached": False, "status": "ok", "input_tokens": input_tokens,
-                             "output_tokens": output_tokens, "latency_seconds": elapsed, "attempts": attempts})
+                             "output_tokens": output_tokens, "latency_seconds": elapsed, "attempts": attempts,
+                             "finish_reason": finish_reason})
             if self.use_cache and cache_path is not None:
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
                 cache_path.write_text(json.dumps({"data": data, "raw_text": text, "input_tokens": input_tokens,

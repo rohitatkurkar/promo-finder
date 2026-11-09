@@ -244,3 +244,52 @@ def test_cut_off_reply_is_asked_again_with_more_room():
     result = LLMClient(config(max_output_tokens=2000), transport=transport, sleep=lambda _: None).chat_json("s", "u", "p", "v1")
     assert result.data == {"a": [1, 2]}
     assert seen == [2000, 4000]
+
+
+def test_cut_off_reply_that_still_parses_is_asked_again_with_more_room():
+    """A reasoning model can use up its output limit and close the JSON early, dropping whole fields."""
+    seen = []
+
+    def transport(url, headers=None, json=None, timeout=None):  # noqa: A002
+        seen.append(json["max_tokens"])
+        if len(seen) == 1:
+            return FakeResponse(200, {"choices": [{"message": {"content": '{"hook_events": []}'}, "finish_reason": "length"}],
+                                      "usage": {"prompt_tokens": 10, "completion_tokens": 2000}})
+        return FakeResponse(200, {"choices": [{"message": {"content": '{"hook_events": [], "ending_events": []}'}, "finish_reason": "stop"}],
+                                  "usage": {"prompt_tokens": 10, "completion_tokens": 2600}})
+
+    ledger = UsageLedger()
+    result = LLMClient(config(max_output_tokens=2000), ledger=ledger, transport=transport, sleep=lambda _: None).chat_json("s", "u", "p", "v1")
+    assert result.data == {"hook_events": [], "ending_events": []}
+    assert seen == [2000, 4000]
+    assert [record["status"] for record in ledger.records] == ["failed", "ok"]
+    assert ledger.records[0]["error_kind"] == "cut_off" and ledger.records[0]["output_tokens"] == 2000
+    assert ledger.records[1]["finish_reason"] == "stop"
+    assert ledger.summary()["totals"]["output_tokens"] == 4600  # The discarded attempt's tokens are still counted.
+
+
+def test_cut_off_twice_keeps_the_second_reply_and_records_why():
+    seen = []
+
+    def transport(url, headers=None, json=None, timeout=None):  # noqa: A002
+        seen.append(json["max_tokens"])
+        return FakeResponse(200, {"choices": [{"message": {"content": '{"hook_events": []}'}, "finish_reason": "length"}],
+                                  "usage": {"prompt_tokens": 10, "completion_tokens": json["max_tokens"]}})
+
+    ledger = UsageLedger()
+    result = LLMClient(config(max_output_tokens=2000), ledger=ledger, transport=transport, sleep=lambda _: None).chat_json("s", "u", "p", "v1")
+    assert result.data == {"hook_events": []}
+    assert seen == [2000, 4000]  # Only one extra attempt, so quota use stays bounded.
+    assert ledger.records[-1]["status"] == "ok" and ledger.records[-1]["finish_reason"] == "length"
+
+
+def test_a_complete_reply_is_not_asked_again():
+    seen = []
+
+    def transport(url, headers=None, json=None, timeout=None):  # noqa: A002
+        seen.append(json["max_tokens"])
+        return FakeResponse(200, {"choices": [{"message": {"content": '{"a": 1}'}, "finish_reason": "stop"}],
+                                  "usage": {"prompt_tokens": 10, "completion_tokens": 1999}})
+
+    LLMClient(config(max_output_tokens=2000), transport=transport, sleep=lambda _: None).chat_json("s", "u", "p", "v1")
+    assert seen == [2000]
