@@ -89,6 +89,9 @@ Optional settings, set in the shell before starting:
 |---|---|
 | `PROMO_OUTPUT_DIR` | The folder of runs to list and save to. Default `outputs/` |
 | `PROMO_PACK_DIR` | A folder holding the screenplay packs. The interface finds a run's pack there by file name, so its transcript shows without uploading the pack again |
+| `PROMO_DEFAULT_RUN` | A run folder to open first, instead of the bundled final run |
+| `PROMO_BLIND_REVIEW_DEFAULT` | `1` starts with blind review mode on |
+| `PROMO_REVIEW_SET` | A JSON file with `run_id` and `clip_keys`. For that run, the clip list is limited to those clips (a checkbox turns this off), with Previous and Next buttons and a progress count |
 
 AI assisted mode in the interface has an "Episodes to process" box (for example `1-3`). Empty means every episode. If `AI_ACCESS_PASSWORD` is set, it also asks for that password and allows at most `AI_MAX_EPISODES` episodes per run (default 3).
 

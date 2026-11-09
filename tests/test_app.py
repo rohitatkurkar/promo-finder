@@ -256,3 +256,75 @@ def test_hosted_ai_runs_are_limited_in_episodes(app, tmp_path):
     _find_promos(app)
     assert any("Not in this pack" in item.value for item in app.error)
     assert _ai_runs(tmp_path) == []
+
+
+# Optional settings for a local review session.
+
+@pytest.fixture
+def review_set(tmp_path):
+    final = _catalog()["default"]
+    promos = json.loads((ROOT / "demo_runs" / final / "promos.json").read_text(encoding="utf-8"))["promos"]
+    keys = [promos[0]["clip_key"], promos[5]["clip_key"], promos[10]["clip_key"]]
+    path = tmp_path / "review_set.json"
+    path.write_text(json.dumps({"run_id": final, "clip_keys": keys}), encoding="utf-8")
+    return path, keys
+
+
+def test_blind_mode_can_start_on(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROMO_OUTPUT_DIR", str(tmp_path / "outputs"))
+    monkeypatch.setenv("PROMO_ENV_FILE", str(tmp_path / "no.env"))
+    monkeypatch.setenv("PROMO_BLIND_REVIEW_DEFAULT", "1")
+    app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60)
+    app.run()
+    assert not app.exception
+    assert app.checkbox(key="blind_review").value is True
+    assert not any(item.value in ("Ranking", "Post this first") for item in app.subheader)
+
+
+def test_blind_mode_is_off_by_default(app):
+    app.run()
+    assert app.checkbox(key="blind_review").value is False
+
+
+def test_review_set_limits_the_clips_and_next_previous_move_through_them(app, monkeypatch, review_set):
+    path, keys = review_set
+    monkeypatch.setenv("PROMO_REVIEW_SET", str(path))
+    app.run()
+    app.checkbox(key="blind_review").check().run()
+    assert not app.exception
+    chooser = app.selectbox(key="clip_choice")
+    assert len(chooser.options) == 3
+    first = chooser.value
+    next(b for b in app.button if b.label == "Next clip ▶").click().run()
+    assert app.selectbox(key="clip_choice").value == app.selectbox(key="clip_choice").options[1]
+    assert any("Clip 2 of 3" in item.value for item in app.caption)
+    next(b for b in app.button if b.label == "◀ Previous clip").click().run()
+    assert app.selectbox(key="clip_choice").value == first
+    next(b for b in app.button if b.label == "◀ Previous clip").click().run()
+    assert app.selectbox(key="clip_choice").value == app.selectbox(key="clip_choice").options[-1]  # Wraps around.
+    app.checkbox(key="only_review_set").uncheck().run()
+    assert len(app.selectbox(key="clip_choice").options) == 33
+
+
+def test_review_set_progress_counts_my_reviews(app, monkeypatch, review_set, tmp_path):
+    path, keys = review_set
+    monkeypatch.setenv("PROMO_REVIEW_SET", str(path))
+    app.run()
+    app.text_input(key="reviewer").input("me").run()
+    assert any("reviewed 0 of 3" in item.value for item in app.info)
+    radios = _review_radios(app)
+    for label in ("Hook quality (1 to 5)", "Cliffhanger quality (1 to 5)", "Clarity (1 to 5)", "Overall quality (1 to 5)"):
+        radios[label].set_value(4)
+    radios["Would publish?"].set_value("Yes")
+    _save_button(app).click().run()
+    assert any("reviewed 1 of 3" in item.value for item in app.info)
+    saved = json.loads((tmp_path / "outputs" / "human_reviews" / "human_reviews.jsonl").read_text(encoding="utf-8").splitlines()[0])
+    assert saved["clip_key"] in keys and saved["run_id"] == _catalog()["default"]
+
+
+def test_default_run_setting_opens_that_run(app, monkeypatch):
+    trial = next(entry for entry in _catalog()["runs"] if entry["folder"].startswith("ai_trial"))
+    monkeypatch.setenv("PROMO_DEFAULT_RUN", str(ROOT / "demo_runs" / trial["folder"]))
+    app.run()
+    assert _open_run_box(app).value == trial["label"]
+    assert app.metric[0].value == "1 of 50"

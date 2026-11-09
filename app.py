@@ -41,6 +41,10 @@ ENV_FILE = Path(os.environ.get("PROMO_ENV_FILE", DEFAULT_ENV))
 # Precomputed results on the invented sample show, shipped with the app so it has something to show at once.
 DEMO_ROOT = ROOT / "demo_runs"
 YOUR_LATEST_RUN = "Your latest run"
+# Optional settings for a local review session. All are off unless set in the shell before starting.
+BLIND_BY_DEFAULT = os.environ.get("PROMO_BLIND_REVIEW_DEFAULT", "").strip().lower() in ("1", "true", "yes")
+REVIEW_SET_FILE = os.environ.get("PROMO_REVIEW_SET")  # JSON with "run_id" and "clip_keys": the clips to review.
+DEFAULT_RUN = os.environ.get("PROMO_DEFAULT_RUN")  # A run folder to open first instead of the bundled default.
 SAMPLE = ROOT / "sample_input" / "synthetic_show.zip"
 KIND_ICON = {DIALOGUE: "Line", ACTION: "Action", CAMERA: "Shot"}
 RATING_FIELDS = [
@@ -96,6 +100,15 @@ def cached_pack(path: str, modified: float):
     return {episode.number: episode for episode in episodes}
 
 
+def load_review_set(run_id: str) -> list[str] | None:
+    """The clip_keys of the review set for this run, if PROMO_REVIEW_SET names one. Otherwise None."""
+    if not REVIEW_SET_FILE or not Path(REVIEW_SET_FILE).is_file():
+        return None
+    data = json.loads(Path(REVIEW_SET_FILE).read_text(encoding="utf-8"))
+    keys = data.get("clip_keys")
+    return list(keys) if data.get("run_id") == run_id and isinstance(keys, list) and keys else None
+
+
 def clip_label(promo: dict, blind: bool) -> str:
     segment = promo["segments"][0]
     if blind:  # The promo ID and rank would reveal the AI's ordering.
@@ -149,6 +162,9 @@ with st.sidebar:
         st.session_state["open_run"] = YOUR_LATEST_RUN  # Show the run just made, not the default.
     default_folder = demo_catalog()["default"] if DEMO_ROOT.exists() else None
     default_label = next((label for label, path in runs if path.parent == DEMO_ROOT and path.name == default_folder), None)
+    if DEFAULT_RUN:
+        wanted = Path(DEFAULT_RUN).resolve()
+        default_label = next((label for label, path in runs if path.resolve() == wanted), default_label)
     if st.session_state.get("open_run") not in run_options:
         st.session_state.pop("open_run", None)
     # The final run opens by default. A remembered choice is used as is (Streamlit warns if both are given).
@@ -158,7 +174,7 @@ with st.sidebar:
     st.header("Human review")
     reviewer = st.text_input("Reviewer name or ID", key="reviewer", help="Saved with each review, so several people can review the same run.")
     blind = st.checkbox(
-        "Blind review mode", key="blind_review",
+        "Blind review mode", key="blind_review", value=BLIND_BY_DEFAULT,
         help="Hides the AI's rank, scores, ratings and explanations, and lists clips in story order, so they cannot sway your rating.",
     )
 
@@ -272,6 +288,11 @@ if not promos:
 elif blind:
     st.info("Blind review mode is on. The AI's rank, scores, ratings and explanations are hidden, and clips are listed in story order.")
     st.subheader("Clips")
+    listed = sorted(promos, key=story_order)
+    in_review_set = load_review_set(run_to_show.name)
+    if in_review_set and st.session_state.get("only_review_set", True):
+        listed = [promo for promo in listed if promo["clip_key"] in set(in_review_set)]
+        st.caption(f"Showing the {len(listed)} clips in your review set.")
     table = pd.DataFrame([{
         "Episode": promo["segments"][0]["episode"],
         "Start": promo["segments"][0]["start_timestamp"],
@@ -279,7 +300,7 @@ elif blind:
         "Seconds": round(promo["total_duration_seconds"], 1),
         "Opening line": promo["hook"]["evidence"],
         "Final line": promo["cliffhanger"]["evidence"],
-    } for promo in sorted(promos, key=story_order)])
+    } for promo in listed])
     st.dataframe(table, use_container_width=True, hide_index=True)
 else:
     first = next((promo for promo in promos if promo["first_post_recommendation"]), None)
@@ -311,8 +332,27 @@ else:
 if promos:
     st.subheader("Clip details")
     ordered = sorted(promos, key=story_order) if blind else promos
+    review_set = load_review_set(run_to_show.name)
+    if review_set:
+        missing = [key for key in review_set if key not in {p["clip_key"] for p in promos}]
+        if missing:
+            st.warning(f"{len(missing)} clip(s) in the review set are not in this run: {', '.join(missing)}")
+        if st.checkbox(f"Only the clips in my review set ({len(review_set) - len(missing)})", value=True, key="only_review_set"):
+            ordered = [p for p in ordered if p["clip_key"] in set(review_set)]
     labels = {clip_label(p, blind): p for p in ordered}
-    selected = labels[st.selectbox("Choose a clip", list(labels))]
+    options = list(labels)
+    if st.session_state.get("clip_choice") not in options:
+        st.session_state.pop("clip_choice", None)
+
+    def step(delta: int) -> None:
+        current = st.session_state.get("clip_choice", options[0])
+        st.session_state["clip_choice"] = options[(options.index(current) + delta) % len(options)]
+
+    nav = st.columns([1, 1, 3])
+    nav[0].button("◀ Previous clip", on_click=step, args=(-1,), use_container_width=True)
+    nav[1].button("Next clip ▶", on_click=step, args=(1,), use_container_width=True)
+    selected = labels[st.selectbox("Choose a clip", options, key="clip_choice")]
+    nav[2].caption(f"Clip {options.index(clip_label(selected, blind)) + 1} of {len(options)}")
     segment = selected["segments"][0]
     if blind:
         st.markdown(f"**Episode {segment['episode']}, {segment['start_timestamp']} to {segment['end_timestamp']}** "
@@ -357,7 +397,8 @@ if promos:
                     "Type": KIND_ICON.get(cue.kind, cue.kind.title()), "Speaker": cue.speaker or "",
                     "Delivery": cue.delivery or "", "Text": cue.text,
                 } for cue in cues_in_range(episode, segment["start_seconds"], segment["end_seconds"])]
-                st.dataframe(pd.DataFrame(rows), use_container_width=True, hide_index=True)
+                # A plain table wraps every line in full, so the whole clip can be read without widening columns.
+                st.table(pd.DataFrame(rows).set_index("Cue"))
             except (ScreenplayPackError, KeyError):
                 st.caption("Could not open the pack for this run.")
 
@@ -408,6 +449,9 @@ if promos:
     reviewed = {clip_key for (_, clip_key, _) in latest}
     st.caption(f"Reviewed in this run: {sum(1 for p in promos if p['clip_key'] in reviewed)} of {len(promos)} clips, "
                f"by {len({key[2] for key in latest})} reviewer(s). Reviews are stored in {review_path}.")
+    if review_set and reviewer.strip():
+        mine = {clip_key for (_, clip_key, who) in latest if who == reviewer.strip().casefold()}
+        st.info(f"Review set progress: you have reviewed {len(mine & set(review_set))} of {len(review_set)} clips.")
     st.caption("Reviews are saved on the computer running this app. On a hosted app such as Streamlit Community Cloud that storage "
                "is temporary and is wiped when the app restarts or sleeps, so download your reviews to keep them.")
     if blind:
