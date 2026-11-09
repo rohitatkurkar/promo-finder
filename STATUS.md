@@ -276,6 +276,17 @@ Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on
 - **Unchanged:** models, prompts, scoring, ranking, discovery, ZIP limits, key handling, retries and error handling.
 - **Tests:** 264 passed. New: no episode limit on a hosted app, one AI run at a time (Basic still runs), whole cache files.
 
+## 4i. Supabase, phase 1: persistent reviews (2026-11-10)
+
+**Done and tested locally against a fake of Supabase's REST API. Not committed. Not yet connected to the real project:** that needs the migration run and two secrets set (manual steps in the README, "Reviews in Supabase").
+
+- **Off by default.** Without `SUPABASE_URL` and `SUPABASE_SECRET_KEY` everything works on files exactly as before.
+- **New:** `supabase/migrations/0001_reviews.sql` (reviews table with checks, indexes, `latest_reviews` view, Row Level Security on with no policies), `promo_finder/cloud.py` (a small REST client on `requests`: no new dependency, 10 s timeout, 2 retries, key redacted), `promo_finder/stores.py` (file store and Supabase store with an outbox for outages), `tools/import_reviews_to_supabase.py` (optional, dry run unless `--yes`; not run).
+- **Changed:** `reviews.py` (optional `reviewer_hash`, schema `review_v2`, v1 lines still load; reviewers identified by hash when present), `app.py` (private link code in `?k=`, "Open a saved link", reviews loaded and saved through the store, only your own reviews shown with Supabase), `.streamlit/secrets.toml.example`, README.
+- **Not changed:** discovery, prompts, scoring, ranking, verification, run storage.
+- **Tests:** 284 passed. New: client settings, headers for new and legacy keys, retries, no retry on a refused key, key never in errors; store save and load per link, same name kept apart, newest review wins, outage then send once, review IDs round trip, old reviews load; app: review kept under the link and found after a refresh, a stranger sees none, outage then sent on next load, opening a saved link, no link without Supabase, key never on the page.
+- **Not tested yet:** the real Supabase project.
+
 ## 5. Two segment promos
 
 Existing pieces (`schema.py`):

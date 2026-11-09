@@ -505,3 +505,97 @@ def test_a_run_whose_pack_is_gone_cannot_be_resumed(app, tmp_path):
     next(button for button in app.sidebar.button if button.label == "Resume unfinished run").click().run()
     assert any("cannot be resumed" in item.value for item in app.error)
     assert not (tmp_path / "outputs" / "basic_x").exists()
+
+
+# Reviews kept in Supabase (a fake of its REST API; no network).
+
+@pytest.fixture
+def cloud_db(monkeypatch):
+    from promo_finder import cloud
+    from conftest import FakeSupabase
+    fake = FakeSupabase()
+    monkeypatch.setattr(cloud, "default_transport", fake)
+    return fake
+
+
+def _cloud_app(tmp_path, monkeypatch, link=None):
+    from conftest import SUPABASE_TEST_KEY, SUPABASE_TEST_URL
+    monkeypatch.setenv("PROMO_OUTPUT_DIR", str(tmp_path / "outputs"))
+    monkeypatch.setenv("PROMO_ENV_FILE", str(tmp_path / "no.env"))
+    app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60)
+    app.secrets["SUPABASE_URL"] = SUPABASE_TEST_URL
+    app.secrets["SUPABASE_SECRET_KEY"] = SUPABASE_TEST_KEY
+    if link:
+        app.query_params["k"] = link
+    app.run()
+    assert not app.exception
+    return app
+
+
+def _save_cloud_review(app, name="Rohit", overall=4):
+    app.text_input(key="reviewer").input(name).run()
+    radios = _review_radios(app)
+    for label in ("Hook quality (1 to 5)", "Cliffhanger quality (1 to 5)", "Clarity (1 to 5)"):
+        radios[label].set_value(3)
+    radios["Overall quality (1 to 5)"].set_value(overall)
+    radios["Would publish?"].set_value("Yes")
+    _save_button(app).click().run()
+    assert not app.exception
+
+
+def _all_text(app):
+    kinds = ("markdown", "caption", "info", "warning", "error", "success", "text", "code")
+    return " ".join(str(getattr(item, "value", "")) for kind in kinds for item in app.get(kind))
+
+
+def test_a_cloud_review_is_kept_under_the_private_link_and_survives_a_refresh(tmp_path, monkeypatch, cloud_db):
+    import hashlib
+    import re
+    from conftest import SUPABASE_TEST_KEY
+    app = _cloud_app(tmp_path, monkeypatch)
+    link = app.query_params["k"][0] if isinstance(app.query_params["k"], list) else app.query_params["k"]
+    assert re.fullmatch(r"[A-Za-z0-9_-]{22}", link)
+    _save_cloud_review(app, overall=5)
+    assert any("Review saved" in item.value for item in app.success)
+    assert len(cloud_db.rows) == 1 and cloud_db.rows[0]["reviewer_hash"] == hashlib.sha256(link.encode()).hexdigest()
+    assert cloud_db.rows[0]["run_id"] == _catalog()["default"]
+    assert not (tmp_path / "outputs" / "human_reviews" / "human_reviews.jsonl").exists()  # Not on the app's disk.
+    assert SUPABASE_TEST_KEY not in _all_text(app)
+
+    again = _cloud_app(tmp_path, monkeypatch, link=link)  # A refresh: same address, new session.
+    again.text_input(key="reviewer").input("Rohit").run()
+    assert any("Your last review of this clip was saved" in item.value for item in again.caption)
+    assert _review_radios(again)["Overall quality (1 to 5)"].value == 5
+
+    stranger = _cloud_app(tmp_path, monkeypatch, link="someone-elses-link-code-xyz")
+    stranger.text_input(key="reviewer").input("Rohit").run()  # Same name, different link: not their review.
+    assert not any("Your last review" in item.value for item in stranger.caption)
+    assert "Reviewed in this run: 0 of 33" in _all_text(stranger)
+
+
+def test_an_outage_keeps_the_review_until_the_database_is_back(tmp_path, monkeypatch, cloud_db):
+    app = _cloud_app(tmp_path, monkeypatch, link="my-private-link-code-0001")
+    cloud_db.down = True
+    _save_cloud_review(app)
+    assert any("could not be reached" in item.value for item in app.warning) and cloud_db.rows == []
+    cloud_db.down = False
+    later = _cloud_app(tmp_path, monkeypatch, link="my-private-link-code-0001")
+    assert len(cloud_db.rows) == 1  # Sent when the next page loaded.
+    assert not any("need attention" in item.value for item in later.warning)
+    later.text_input(key="reviewer").input("Rohit").run()
+    assert any("Your last review of this clip was saved" in item.value for item in later.caption)
+
+
+def test_a_saved_link_can_be_opened(tmp_path, monkeypatch, cloud_db):
+    app = _cloud_app(tmp_path, monkeypatch)
+    app.text_input(key="saved_link").input("https://kuku.example.app/?k=my-private-link-code-0001").run()
+    value = app.query_params["k"]
+    assert (value[0] if isinstance(value, list) else value) == "my-private-link-code-0001"
+    app.text_input(key="saved_link").input("not a link").run()
+    assert any("not a link or code" in item.value for item in app.sidebar.caption)
+
+
+def test_without_supabase_there_is_no_private_link(app):
+    app.run()
+    assert "k" not in app.query_params
+    assert not any(box.label == "Open a saved link" for box in app.text_input)

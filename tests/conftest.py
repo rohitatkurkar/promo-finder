@@ -129,3 +129,43 @@ def write_env(path, api_key="test-key-abc123456789", finder="finder-model", eval
         encoding="utf-8",
     )
     return path
+
+
+SUPABASE_TEST_URL = "https://project.supabase.test"
+SUPABASE_TEST_KEY = "sb_secret_TEST_ONLY_not_a_real_key_0123456789"
+
+
+class FakeSupabase:
+    """Just enough of Supabase's REST API for the reviews table: insert (optionally skipping duplicates) and filtered
+    select. Set `down` to make every call fail like a network outage. No network is used."""
+
+    def __init__(self):
+        self.rows: list[dict] = []
+        self.calls: list[dict] = []
+        self.down = False
+        self.status: int | None = None  # Answer every call with this HTTP status instead.
+
+    def __call__(self, method, url, params=None, json=None, headers=None, timeout=None):  # noqa: A002
+        import uuid
+
+        import requests
+        self.calls.append({"method": method, "url": url, "params": params, "json": json, "headers": headers})
+        if self.down:
+            raise requests.ConnectionError("connection refused")
+        if self.status:
+            return FakeResponse(self.status, text="error")
+        assert url.startswith(f"{SUPABASE_TEST_URL}/rest/v1/reviews")
+        if method == "POST":
+            stored = {row["review_id"] for row in self.rows}
+            for row in json:
+                row = dict(row, review_id=str(uuid.UUID(row["review_id"])))
+                if row["review_id"] in stored:
+                    if (params or {}).get("on_conflict") == "review_id":
+                        continue
+                    return FakeResponse(409, text="duplicate key")
+                self.rows.append(row)
+                stored.add(row["review_id"])
+            return FakeResponse(201, text="")
+        filters = {key: value[3:] for key, value in (params or {}).items() if str(value).startswith("eq.")}
+        found = [row for row in self.rows if all(str(row.get(key)) == value for key, value in filters.items())]
+        return FakeResponse(200, payload=sorted(found, key=lambda row: row["saved_at"]))

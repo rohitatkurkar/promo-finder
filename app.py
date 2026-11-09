@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
+import re
 import shutil
 import tempfile
 from pathlib import Path
+from secrets import token_urlsafe
 
 import pandas as pd
 import streamlit as st
@@ -15,19 +18,20 @@ from dotenv import dotenv_values
 from pydantic import ValidationError
 
 from promo_finder.boundaries import cues_in_range
+from promo_finder.cloud import SupabaseClient, supabase_config
 from promo_finder.hosting import AI_RUN_LOCK, has_api_key, merge_settings, parse_episode_selection
 from promo_finder.llm_client import LLMError
 from promo_finder.parser import ACTION, CAMERA, DIALOGUE, ScreenplayPackError, format_timestamp, load_pack
 from promo_finder.pipeline import DEFAULT_ENV, pack_title, run_ai_pipeline, run_basic_pipeline
 from promo_finder.uploads import new_run_dir, store_upload
+from promo_finder.stores import FileReviewStore, SupabaseReviewStore
 from promo_finder.reviews import (
-    append_review,
     comparison_rows,
-    load_reviews,
     latest_reviews,
     new_review,
     review_by,
     review_store_path,
+    reviewer_identity,
     reviews_of,
     rows_to_csv,
     rows_to_json,
@@ -165,6 +169,46 @@ def story_order(promo: dict) -> tuple:
     return segment["episode"], segment["start_seconds"]
 
 
+# A private link code in the page address (?k=...) identifies a visitor's reviews when they are kept in Supabase.
+# It survives a refresh and can be bookmarked. Only its SHA-256 is stored. Anyone with the link can see those reviews.
+LINK_CODE = re.compile(r"[A-Za-z0-9_-]{22,64}")
+
+
+def private_link_code() -> str:
+    code = st.query_params.get("k", "")
+    if not LINK_CODE.fullmatch(code):
+        code = token_urlsafe(16)
+        st.query_params["k"] = code
+    return code
+
+
+def use_saved_link() -> None:
+    text = st.session_state.get("saved_link", "").strip()
+    in_link = re.search(r"[?&]k=([A-Za-z0-9_-]{22,64})", text)
+    code = in_link.group(1) if in_link else (text if LINK_CODE.fullmatch(text) else "")
+    if code:
+        st.query_params["k"] = code
+        st.session_state["saved_link_problem"] = ""
+    elif text:
+        st.session_state["saved_link_problem"] = "That is not a link or code from this app."
+    st.session_state["saved_link"] = ""
+
+
+settings, _ = load_settings()
+# Supabase settings stay with the review store; the AI pipeline only gets its own settings.
+ai_settings = {name: value for name, value in settings.items() if not name.startswith("SUPABASE_")}
+try:
+    cloud_config = supabase_config(settings)
+except ValueError as error:
+    cloud_config = None
+    st.error(f"Reviews are kept on this server only: {error}")
+if cloud_config:
+    review_store = SupabaseReviewStore(SupabaseClient(cloud_config), OUTPUT_ROOT / "human_reviews" / "pending_cloud_reviews.jsonl")
+    reviewer_hash = hashlib.sha256(private_link_code().encode("utf-8")).hexdigest()
+else:
+    review_store = FileReviewStore(review_store_path(OUTPUT_ROOT))
+    reviewer_hash = None
+
 # Set by the Find promos button's callback, which runs before the script, so the run list can offer the new run.
 run_clicked = st.session_state.pop("run_requested", False)
 resume_clicked = st.session_state.pop("resume_requested", False)
@@ -202,6 +246,12 @@ with st.sidebar:
         help="Hides the AI's rank, scores, ratings and explanations, and lists clips in story order, so they cannot sway your rating.",
     )
     st.caption("Reviews apply to the currently selected run.")
+    if review_store.cloud:
+        st.caption("Your reviews are saved under this page's private link (its address ends in ?k=…). Bookmark it to come "
+                   "back to them on any device. Anyone with the link can see and add to them.")
+        st.text_input("Open a saved link", key="saved_link", on_change=use_saved_link, placeholder="Paste a link or its code")
+        if st.session_state.get("saved_link_problem"):
+            st.caption(st.session_state["saved_link_problem"])
 
     # 3. A new run: a separate activity, folded away.
     st.divider()
@@ -212,7 +262,6 @@ with st.sidebar:
                    "and to a model provider only in AI assisted mode.")
         mode = st.radio("Selection method", ["Basic (no API key)", "AI assisted"])
         fresh = False
-        settings, _ = load_settings()
         episode_text = ""
         if mode == "AI assisted":
             if has_api_key(settings):
@@ -293,7 +342,7 @@ if job:
             else:
                 summary = run_ai_pipeline(job["source"], run_dir, use_cache=not job["fresh"], cache_dir=OUTPUT_ROOT / "llm_cache",
                                           on_progress=show_progress, only_episodes=set(job["episodes"]) if job["episodes"] else None,
-                                          env_values=settings)
+                                          env_values=ai_settings)
             bar.empty()
             st.session_state["current_run"] = str(run_dir)
             if summary.get("stopped_because"):
@@ -492,23 +541,24 @@ if promos:
                 st.caption("Could not open the pack for this run.")
 
     # Human review. Saved apart from the run, so the AI's outputs are never changed.
-    review_path = review_store_path(OUTPUT_ROOT)
-    records, problems = load_reviews(review_path)
+    records, problems = review_store.load(run_to_show.name, reviewer_hash)
     latest = latest_reviews(records, run_to_show.name)
+    # Who is reviewing: the private link's hash with Supabase, otherwise the typed name.
+    identity = reviewer_hash or reviewer.strip().casefold()
     st.subheader("Human review")
     if problems:
-        st.warning(f"{len(problems)} saved review line(s) could not be read and were skipped: " + " ".join(problems))
+        st.warning("Some saved reviews need attention: " + " ".join(problems))
     if not reviewer.strip():
         st.info("Enter your reviewer name or ID in the sidebar to review this clip.")
     else:
-        previous = review_by(latest, run_to_show.name, selected["clip_key"], reviewer)
+        previous = review_by(latest, run_to_show.name, selected["clip_key"], identity)
         others = sum(1 for (run_id, clip_key, _), record in latest.items()
-                     if clip_key == selected["clip_key"] and record.reviewer.strip().casefold() != reviewer.strip().casefold())
+                     if clip_key == selected["clip_key"] and reviewer_identity(record) != identity)
         if previous:
             st.caption(f"Your last review of this clip was saved {previous.saved_at[:19].replace('T', ' ')} UTC. Saving again replaces it; the earlier one stays in the history.")
         if others:
             st.caption(f"{others} other reviewer(s) have reviewed this clip. Their ratings are not shown here.")
-        form_key = f"review|{run_to_show.name}|{selected['clip_key']}|{reviewer.strip().casefold()}"
+        form_key = f"review|{run_to_show.name}|{selected['clip_key']}|{identity}"
         with st.form(form_key):
             choices = {}
             for field, label in RATING_FIELDS:
@@ -526,27 +576,35 @@ if promos:
                 st.error("Please answer every question before saving: " + ", ".join(missing) + ".")
             else:
                 try:
-                    record = new_review(run_to_show, selected, method, reviewer, would_publish=VERDICTS[verdict], comments=comments, **choices)
+                    record = new_review(run_to_show, selected, method, reviewer, reviewer_hash=reviewer_hash,
+                                        would_publish=VERDICTS[verdict], comments=comments, **choices)
                 except ValidationError as error:
                     st.error(f"The review could not be saved: {error.errors()[0]['msg']}")
                 else:
-                    append_review(review_path, record)
-                    st.success(f"Review saved for {selected['promo_id'] if not blind else clip_label(selected, True)}.")
-                    records, problems = load_reviews(review_path)
+                    result = review_store.save(record)
+                    if review_store.cloud and not result.in_cloud:
+                        st.warning(result.message)
+                    else:
+                        st.success(f"Review saved for {selected['promo_id'] if not blind else clip_label(selected, True)}.")
+                    records, _ = review_store.load(run_to_show.name, reviewer_hash)
                     latest = latest_reviews(records, run_to_show.name)
 
     reviewed = {clip_key for (_, clip_key, _) in latest}
     st.caption(f"Reviewed in this run: {sum(1 for p in promos if p['clip_key'] in reviewed)} of {len(promos)} clips, "
-               f"by {len({key[2] for key in latest})} reviewer(s). Reviews are stored in {review_path}.")
+               f"by {len({key[2] for key in latest})} reviewer(s). Reviews are stored in {review_store.location}.")
     if review_set and reviewer.strip():
-        mine = {clip_key for (_, clip_key, who) in latest if who == reviewer.strip().casefold()}
+        mine = {clip_key for (_, clip_key, who) in latest if who == identity}
         st.info(f"Review set progress: you have reviewed {len(mine & set(review_set))} of {len(review_set)} clips.")
-    st.caption("Reviews are saved on the computer running this app. On a hosted app such as Streamlit Community Cloud that storage "
-               "is temporary and is wiped when the app restarts or sleeps, so download your reviews to keep them.")
+    if review_store.cloud:
+        st.caption("Your reviews are kept in the app's database and survive restarts. You only see your own. Runs made on "
+                   "this app are not kept yet: they are lost when it restarts.")
+    else:
+        st.caption("Reviews are saved on the computer running this app. On a hosted app such as Streamlit Community Cloud that storage "
+                   "is temporary and is wiped when the app restarts or sleeps, so download your reviews to keep them.")
     if blind:
         st.caption("Turn off blind review mode to compare human and AI ratings. The download below holds your reviews only, no AI figures.")
         # Only this reviewer's reviews: other people's ratings must not reach a blind reviewer.
-        own = reviews_of(latest, reviewer)
+        own = reviews_of(latest, identity)
         st.download_button("My reviews (JSON)", json.dumps([record.model_dump(exclude={"promo_id"}) for record in own], indent=2, ensure_ascii=False),
                            file_name=f"human_reviews_{run_to_show.name}_blind.json", disabled=not own)
     else:

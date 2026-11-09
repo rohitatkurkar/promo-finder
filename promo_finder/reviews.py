@@ -9,6 +9,11 @@ One line is one saved review. Lines are only ever added, never edited, so the fi
 also keeps the history. When the same reviewer saves the same promo twice, the later
 line is the current review.
 
+On a hosted app with Supabase, reviews go to its database instead (see stores.py), and each
+review also carries reviewer_hash: the SHA-256 of the reviewer's private link code. The reviewer
+is then identified by that hash, not by the typed name, so two people who type the same name
+stay apart. Without a hash (files on this computer), the name identifies the reviewer, as before.
+
 A review is tied to a run by the run folder's name, and to a promo by its clip_key,
 which is built from the hook and ending cue IDs. The promo_id (P0001, B0003...) is
 kept for reading, but it is not a stable key, because it is given by rank. The run's
@@ -30,7 +35,7 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, Field, ValidationError, field_validator
 
-REVIEW_SCHEMA_VERSION = "review_v1"
+REVIEW_SCHEMA_VERSION = "review_v2"  # v2 added the optional reviewer_hash. v1 lines still load.
 REVIEW_FOLDER = "human_reviews"
 REVIEW_FILE = "human_reviews.jsonl"
 
@@ -70,6 +75,7 @@ class HumanReviewRecord(BaseModel):
     overall_quality: Rating
     would_publish: Verdict
     comments: str = Field(default="", max_length=5000)
+    reviewer_hash: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
     @field_validator("reviewer", "comments", mode="before")
     @classmethod
@@ -86,7 +92,8 @@ def file_sha256(path: str | Path) -> str:
     return hashlib.sha256(Path(path).read_bytes()).hexdigest()
 
 
-def new_review(run_dir: str | Path, promo: dict, selection_method: str, reviewer: str, **ratings) -> HumanReviewRecord:
+def new_review(run_dir: str | Path, promo: dict, selection_method: str, reviewer: str, reviewer_hash: str | None = None,
+               **ratings) -> HumanReviewRecord:
     """Build a review for a promo of this run. Raises ValidationError if a field is missing or out of range."""
     run_dir = Path(run_dir)
     segment = promo["segments"][0]
@@ -100,6 +107,7 @@ def new_review(run_dir: str | Path, promo: dict, selection_method: str, reviewer
         episode=segment["episode"],
         start_timestamp=segment["start_timestamp"],
         end_timestamp=segment["end_timestamp"],
+        reviewer_hash=reviewer_hash,
         **ratings,
     )
 
@@ -137,17 +145,22 @@ def _reviewer_key(name: str) -> str:
     return name.strip().casefold()
 
 
+def reviewer_identity(record: HumanReviewRecord) -> str:
+    """Who wrote a review: their link hash when there is one, otherwise their name, ignoring case and spaces."""
+    return record.reviewer_hash or _reviewer_key(record.reviewer)
+
+
 def latest_reviews(records: list[HumanReviewRecord], run_id: str | None = None) -> dict[tuple[str, str, str], HumanReviewRecord]:
     """The current review per (run, clip, reviewer). Later lines replace earlier ones."""
     latest: dict[tuple[str, str, str], HumanReviewRecord] = {}
     for record in records:
         if run_id is None or record.run_id == run_id:
-            latest[(record.run_id, record.clip_key, _reviewer_key(record.reviewer))] = record
+            latest[(record.run_id, record.clip_key, reviewer_identity(record))] = record
     return latest
 
 
 def reviews_of(latest: dict[tuple[str, str, str], HumanReviewRecord], reviewer: str) -> list[HumanReviewRecord]:
-    """One reviewer's current reviews. An empty name has none."""
+    """One reviewer's current reviews. `reviewer` is their identity: a link hash, or a name. Empty has none."""
     key = _reviewer_key(reviewer)
     return [record for (_, _, who), record in latest.items() if key and who == key]
 
