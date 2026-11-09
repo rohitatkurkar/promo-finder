@@ -1,4 +1,4 @@
-"""A small client for the parts of Supabase the app uses: rows in Postgres, through its REST API.
+"""A small client for the parts of Supabase the app uses: rows in Postgres and files in Storage, through their REST APIs.
 
 Runs only on the server. The secret key comes from Streamlit secrets (or .streamlit/secrets.toml
 locally), is sent only to the Supabase project, and is removed from every error message.
@@ -11,7 +11,7 @@ from __future__ import annotations
 import time
 from collections.abc import Mapping
 from dataclasses import dataclass
-from urllib.parse import urlparse
+from urllib.parse import quote, urlparse
 
 import requests
 
@@ -71,16 +71,17 @@ class SupabaseClient:
         headers.update(extra or {})
         return headers
 
-    def _request(self, method: str, path: str, *, params=None, json=None, headers=None):
+    def _request(self, method: str, path: str, *, params=None, json=None, data=None, headers=None):
         transport = self._transport or default_transport
         url = f"{self.config.url}{path}"
         last: CloudError | None = None
+        extra = {"data": data} if data is not None else {}
         for attempt in range(self.retries + 1):
             if attempt:
                 self.sleep(0.5 * 2 ** (attempt - 1))
             try:
                 response = transport(method, url, params=params, json=json, headers=self._headers(headers),
-                                     timeout=self.config.timeout_seconds)
+                                     timeout=self.config.timeout_seconds, **extra)
             except requests.RequestException as error:
                 last = CloudError("network", self.redact(f"{type(error).__name__}: {error}")[:300])
                 continue
@@ -112,3 +113,13 @@ class SupabaseClient:
         if order:
             params["order"] = order
         return self._request("GET", f"/rest/v1/{table}", params=params).json()
+
+    # Storage: files in a private bucket, reachable only with the secret key.
+
+    def upload(self, bucket: str, path: str, data: bytes, content_type: str) -> None:
+        """Store a file, replacing one already at that path, so a retried save is safe."""
+        self._request("POST", f"/storage/v1/object/{bucket}/{quote(path)}", data=data,
+                      headers={"Content-Type": content_type, "x-upsert": "true"})
+
+    def download(self, bucket: str, path: str) -> bytes:
+        return self._request("GET", f"/storage/v1/object/authenticated/{bucket}/{quote(path)}").content

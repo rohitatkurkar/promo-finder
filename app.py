@@ -18,13 +18,14 @@ from dotenv import dotenv_values
 from pydantic import ValidationError
 
 from promo_finder.boundaries import cues_in_range
-from promo_finder.cloud import SupabaseClient, supabase_config
+from promo_finder.cloud import CloudError, SupabaseClient, supabase_config
+from promo_finder.excerpts import write_excerpts
 from promo_finder.hosting import AI_RUN_LOCK, has_api_key, merge_settings, parse_episode_selection
 from promo_finder.llm_client import LLMError
 from promo_finder.parser import ACTION, CAMERA, DIALOGUE, ScreenplayPackError, format_timestamp, load_pack
 from promo_finder.pipeline import DEFAULT_ENV, pack_title, run_ai_pipeline, run_basic_pipeline
 from promo_finder.uploads import new_run_dir, store_upload
-from promo_finder.stores import FileReviewStore, SupabaseReviewStore
+from promo_finder.stores import FileReviewStore, SupabaseReviewStore, SupabaseRunStore
 from promo_finder.reviews import (
     comparison_rows,
     latest_reviews,
@@ -203,11 +204,49 @@ except ValueError as error:
     cloud_config = None
     st.error(f"Reviews are kept on this server only: {error}")
 if cloud_config:
-    review_store = SupabaseReviewStore(SupabaseClient(cloud_config), OUTPUT_ROOT / "human_reviews" / "pending_cloud_reviews.jsonl")
+    cloud_client = SupabaseClient(cloud_config)
+    review_store = SupabaseReviewStore(cloud_client, OUTPUT_ROOT / "human_reviews" / "pending_cloud_reviews.jsonl")
+    # Finished runs are kept in Supabase too, under the same private link (owner_hash = the link code's SHA-256).
+    run_store = SupabaseRunStore(cloud_client)
     reviewer_hash = hashlib.sha256(private_link_code().encode("utf-8")).hexdigest()
 else:
     review_store = FileReviewStore(review_store_path(OUTPUT_ROOT))
+    run_store = None
     reviewer_hash = None
+CLOUD_RUNS = OUTPUT_ROOT / "cloud_runs"  # Local copies of saved runs, fetched when opened. Named by run, as reviews expect.
+unsaved_runs: list[str] = st.session_state.setdefault("unsaved_runs", [])
+
+
+def saved_run_label(row: dict) -> str:
+    kind = "AI assisted" if row.get("mode") == "ai_assisted" else "Basic"
+    when = str(row.get("created_at", ""))[:16].replace("T", " ")
+    return f"Saved run: {row.get('title') or row.get('input_file') or row['id']} · {kind} · {when} UTC · {row['id'][-6:]}"
+
+
+def retry_save(run_dir: str) -> None:
+    st.session_state["retry_save"] = run_dir
+
+
+def keep_finished_run(run_dir: Path, source: str | None) -> None:
+    """After a run finishes: save each clip's screenplay excerpt next to it, then copy it to Supabase if configured."""
+    if source:
+        try:
+            write_excerpts(source, run_dir)
+        except Exception:  # noqa: BLE001 - excerpts are a convenience; the run's results stand without them.
+            pass
+    if run_store is None:
+        return
+    result = run_store.save(run_dir, reviewer_hash)
+    if result.in_cloud:
+        if str(run_dir) in unsaved_runs:
+            unsaved_runs.remove(str(run_dir))
+        st.success("Saved to the app's database under your private link: reopen it from Existing runs after a refresh "
+                   "or a restart, on any device with this link.")
+    else:
+        if str(run_dir) not in unsaved_runs:
+            unsaved_runs.append(str(run_dir))
+        st.warning(f"These results are NOT saved to the database ({result.message}). They are only on this server and are "
+                   "lost when the app restarts. Use \"Save these results again\" below, or download the files.")
 
 # Set by the Find promos button's callback, which runs before the script, so the run list can offer the new run.
 run_clicked = st.session_state.pop("run_requested", False)
@@ -220,6 +259,24 @@ with st.sidebar:
     # 1. Existing runs. Opening one only reads its saved results: nothing is processed and no model is called.
     st.header("Existing runs")
     runs = existing_runs(set(my_runs) if SHARED_HOST else None)
+    cloud_rows: dict[str, dict] = {}  # Label to row, for this visitor's runs saved in Supabase.
+    if run_store is not None:
+        try:
+            saved_rows = run_store.list(reviewer_hash)
+        except CloudError as error:
+            saved_rows = []
+            st.warning(f"Your saved runs could not be loaded right now ({error.kind}). Refresh to try again.")
+        saved_ids = {row["id"] for row in saved_rows}
+        bundled = [(label, path) for label, path in runs if path.parent == DEMO_ROOT]
+        not_saved = [(f"Your run, not saved: {path.name}", path) for label, path in runs
+                     if path.parent != DEMO_ROOT and path.name not in saved_ids]
+        saved = []
+        for row in saved_rows:
+            here = OUTPUT_ROOT / row["id"]
+            label = saved_run_label(row)
+            cloud_rows[label] = row
+            saved.append((label, here if (here / "promos.json").is_file() else CLOUD_RUNS / row["id"]))
+        runs = bundled + saved + not_saved
     run_paths = dict(runs)
     run_options = [label for label, _ in runs]
     if run_clicked or resume_clicked or st.session_state.get("current_run"):
@@ -247,8 +304,8 @@ with st.sidebar:
     )
     st.caption("Reviews apply to the currently selected run.")
     if review_store.cloud:
-        st.caption("Your reviews are saved under this page's private link (its address ends in ?k=…). Bookmark it to come "
-                   "back to them on any device. Anyone with the link can see and add to them.")
+        st.caption("Your reviews and finished runs are saved under this page's private link (its address ends in ?k=…). "
+                   "Bookmark it to come back to them on any device. Anyone with the link can see and add to them.")
         st.text_input("Open a saved link", key="saved_link", on_change=use_saved_link, placeholder="Paste a link or its code")
         if st.session_state.get("saved_link_problem"):
             st.caption(st.session_state["saved_link_problem"])
@@ -345,14 +402,17 @@ if job:
                                           env_values=ai_settings)
             bar.empty()
             st.session_state["current_run"] = str(run_dir)
+            unfinished_note = " It is not saved to the database until it completes." if run_store is not None else ""
             if summary.get("stopped_because"):
                 st.warning(f"The run stopped early: {summary['stopped_because']} Saved progress is kept: use Resume unfinished run "
-                           "in the sidebar to continue it.")
+                           f"in the sidebar to continue it.{unfinished_note}")
             elif summary.get("complete") is False:
-                st.warning("The run finished with some failures. See the processing summary below. Resume unfinished run retries them.")
+                st.warning("The run finished with some failures. See the processing summary below. Resume unfinished run retries "
+                           f"them.{unfinished_note}")
             else:
                 st.session_state.pop("resumable", None)
                 st.success(f"Finished in {summary['processing_seconds']} seconds.")
+                keep_finished_run(run_dir, job["source"])
         except ScreenplayPackError as error:
             bar.empty()
             st.session_state.pop("resumable", None)
@@ -375,6 +435,9 @@ if unfinished:
                    "skips the episodes already done.")
         st.button("Resume unfinished run", use_container_width=True, on_click=resume_run)
 
+if st.session_state.get("retry_save") and run_store is not None:
+    keep_finished_run(Path(st.session_state.pop("retry_save")), None)
+
 run_to_show = None
 if chosen_run == YOUR_LATEST_RUN:
     if st.session_state.get("current_run"):
@@ -383,6 +446,15 @@ if chosen_run == YOUR_LATEST_RUN:
         run_to_show = run_paths[default_label]
 elif chosen_run:
     run_to_show = run_paths[chosen_run]
+
+if run_to_show is not None and chosen_run in cloud_rows and not (run_to_show / "promos.json").exists():
+    # A saved run not on this server (after a restart, or on another device): fetch the owner's copy.
+    try:
+        with st.spinner("Opening your saved run"):
+            run_store.download(cloud_rows[chosen_run], reviewer_hash, run_to_show)
+    except (CloudError, PermissionError) as error:
+        st.error(f"This saved run could not be opened right now: {error}. Refresh to try again.")
+        st.stop()
 
 if run_to_show is None or not (run_to_show / "promos.json").exists():
     st.info("Open \"Run on a new screenplay pack\" in the sidebar, choose a pack and click Find promos. "
@@ -401,6 +473,9 @@ promos = data["promos"]
 method = data["selection_method"]
 
 st.header(f"Results: {data.get('title', '')}")
+if str(run_to_show) in unsaved_runs and run_store is not None:
+    st.warning("These results are not saved to the database yet. They are only on this server and are lost when the app restarts.")
+    st.button("Save these results again", on_click=retry_save, args=(str(run_to_show),))
 if method == "basic":
     st.warning("Basic selections. These come from simple signals. They have had no story judgement and no cold viewer test.")
 else:
@@ -596,8 +671,8 @@ if promos:
         mine = {clip_key for (_, clip_key, who) in latest if who == identity}
         st.info(f"Review set progress: you have reviewed {len(mine & set(review_set))} of {len(review_set)} clips.")
     if review_store.cloud:
-        st.caption("Your reviews are kept in the app's database and survive restarts. You only see your own. Runs made on "
-                   "this app are not kept yet: they are lost when it restarts.")
+        st.caption("Your reviews are kept in the app's database and survive restarts. You only see your own. Finished runs "
+                   "are saved there too; a run that stopped early is not, and is lost when the app restarts.")
     else:
         st.caption("Reviews are saved on the computer running this app. On a hosted app such as Streamlit Community Cloud that storage "
                    "is temporary and is wiped when the app restarts or sleeps, so download your reviews to keep them.")

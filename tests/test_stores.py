@@ -9,7 +9,9 @@ from promo_finder.cloud import SupabaseClient, SupabaseConfig
 from promo_finder.pipeline import run_basic_pipeline
 from promo_finder.reviews import HumanReviewRecord, latest_reviews, new_review, review_by
 from promo_finder.stores import FileReviewStore, SupabaseReviewStore
-from conftest import SUPABASE_TEST_KEY, SUPABASE_TEST_URL, FakeSupabase
+from conftest import ROOT, SUPABASE_TEST_KEY, SUPABASE_TEST_URL, FakeSupabase
+
+ROOT_DEMO = ROOT / "demo_runs"
 
 MINE = hashlib.sha256(b"my-private-link-code-0001").hexdigest()
 THEIRS = hashlib.sha256(b"their-private-link-code-02").hexdigest()
@@ -114,3 +116,92 @@ def test_a_review_from_before_link_hashes_still_loads():
     assert HumanReviewRecord.model_validate(old).reviewer_hash is None
     with pytest.raises(ValueError):
         HumanReviewRecord.model_validate(dict(old, reviewer_hash="not-a-hash"))
+
+
+# Runs kept in Supabase.
+
+from promo_finder.cloud import CloudError  # noqa: E402
+from promo_finder.excerpts import write_excerpts  # noqa: E402
+from promo_finder.stores import SupabaseRunStore, run_files  # noqa: E402
+
+
+@pytest.fixture
+def run_store(cloud):
+    fake, review_store = cloud
+    return fake, SupabaseRunStore(review_store.client)
+
+
+@pytest.fixture
+def finished_run(basic_run, sample_zip):
+    run_dir, promos = basic_run
+    write_excerpts(sample_zip, run_dir)
+    return run_dir, promos
+
+
+def _files(folder):
+    return {p.relative_to(folder).as_posix(): p.read_bytes() for p in folder.rglob("*") if p.is_file()}
+
+
+def test_a_finished_run_is_stored_under_its_owner_and_comes_back_identical(finished_run, run_store, tmp_path):
+    run_dir, _ = finished_run
+    fake, store = run_store
+    assert store.save(run_dir, MINE).in_cloud
+    names = run_files(run_dir)
+    assert "transcripts.json" in names and "promos.json" in names and "checkpoint.json" not in names
+    assert set(fake.objects) == {f"promo-data/{MINE}/{run_dir.name}/{name}" for name in names}
+    row = fake.tables["runs"][0]
+    assert row["id"] == run_dir.name and row["owner_hash"] == MINE and row["mode"] == "basic" and row["files"] == names
+    copy = store.download(store.list(MINE)[0], MINE, tmp_path / "copies" / run_dir.name)
+    assert copy.name == run_dir.name  # Reviews refer to runs by this name.
+    original = _files(run_dir)
+    assert _files(copy) == {name: original[name] for name in names}
+
+
+def test_another_link_cannot_list_or_open_a_run(finished_run, run_store, tmp_path):
+    run_dir, _ = finished_run
+    _, store = run_store
+    store.save(run_dir, MINE)
+    assert store.list(THEIRS) == []
+    with pytest.raises(PermissionError):
+        store.download(store.list(MINE)[0], THEIRS, tmp_path / "theirs" / run_dir.name)
+    assert not (tmp_path / "theirs").exists()
+
+
+def test_a_failed_save_adds_no_row_and_a_retry_completes_it(finished_run, run_store):
+    run_dir, _ = finished_run
+    fake, store = run_store
+    fake.fail_on = "/storage/"
+    result = store.save(run_dir, MINE)
+    assert not result.in_cloud and "network" in result.message and fake.tables["runs"] == []
+    fake.fail_on = None
+    assert store.save(run_dir, MINE).in_cloud and store.save(run_dir, MINE).in_cloud
+    assert len(fake.tables["runs"]) == 1  # Saving twice keeps one row.
+
+
+def test_a_failed_download_leaves_no_half_run(finished_run, run_store, tmp_path):
+    run_dir, _ = finished_run
+    fake, store = run_store
+    store.save(run_dir, MINE)
+    row = store.list(MINE)[0]
+    fake.fail_on = "/report.md"
+    with pytest.raises(CloudError):
+        store.download(row, MINE, tmp_path / "copies" / run_dir.name)
+    assert not (tmp_path / "copies" / run_dir.name).exists()
+    assert list((tmp_path / "copies").iterdir()) == []  # No leftover side folder either.
+
+
+def test_a_file_name_cannot_point_outside_the_run_folder(finished_run, run_store, tmp_path):
+    run_dir, _ = finished_run
+    _, store = run_store
+    store.save(run_dir, MINE)
+    row = dict(store.list(MINE)[0])
+    row["files"] = row["files"] + ["../escaped.json"]
+    store.download(row, MINE, tmp_path / "copies" / run_dir.name)
+    assert not (tmp_path / "copies" / "escaped.json").exists()
+
+
+def test_an_ai_run_keeps_the_evaluations_of_its_recommended_clips_only(tmp_path):
+    folder = ROOT_DEMO / "ai_trial_E01_groq_2026-11-08"
+    names = run_files(folder)
+    promos = json.loads((folder / "promos.json").read_text(encoding="utf-8"))["promos"]
+    assert {name for name in names if name.startswith("evaluations/")} == {f"evaluations/{p['clip_key']}.json" for p in promos}

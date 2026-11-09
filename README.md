@@ -131,13 +131,13 @@ Enter a reviewer name or ID in the sidebar first. Several people can review the 
 
 Reviews are saved in `<runs folder>/human_reviews/human_reviews.jsonl`, one line per saved review, never edited. Each review records the run folder name, the promo's `clip_key` (the stable ID built from its hook and ending cues), its `promo_id`, the reviewer, the time, and a fingerprint of the run's `promos.json`, so a run regenerated after review is flagged. Reviews never change the run's files, the ranking, the prompts or the models, and make no API calls. They stay on the computer running the app and are ignored by Git. On a hosted app that storage is temporary, so export them.
 
-## Reviews in Supabase
+## Reviews and runs in Supabase
 
-Optional. Without it, reviews stay in the JSONL file above, which a hosted app loses on every restart. With it, reviews are kept in a Supabase Postgres database (the free tier is enough) and survive restarts, sleeps and redeploys. Runs themselves are not kept yet.
+Optional. Without it, reviews stay in the JSONL file above, which a hosted app loses on every restart. With it, reviews and finished runs are kept in a Supabase project (the free tier is enough) and survive refreshes, restarts, sleeps and redeploys.
 
 Setup, once:
 
-1. In the Supabase dashboard, open the SQL Editor and run `supabase/migrations/0001_reviews.sql`. It creates the `reviews` table and a `latest_reviews` view, with Row Level Security on and no policies, so the public (publishable) key cannot read or write anything.
+1. In the Supabase dashboard, open the SQL Editor and run `supabase/migrations/0001_reviews.sql`, then `supabase/migrations/0002_runs.sql`. They create the `reviews` and `runs` tables, a `latest_reviews` view and the private storage bucket `promo-data`, with Row Level Security on and no policies, so the public (publishable) key cannot read or write anything. They only create things that do not exist yet.
 2. Under Settings, API Keys, create a **secret** key for this app (`sb_secret_…`).
 3. Add `SUPABASE_URL` and `SUPABASE_SECRET_KEY` to the app's Secrets (see `.streamlit/secrets.toml.example`).
 
@@ -146,8 +146,9 @@ How it works:
 - **Private link.** Each visitor gets a random code in the page address (`?k=…`). It survives a refresh; bookmark the page to come back to your reviews on any device, or paste the link into "Open a saved link". Only the code's SHA-256 is stored. Anyone with the link can see and add to those reviews, like a shared document link.
 - **Your reviews only.** The app asks the database only for the reviews filed under your link, so you never see other people's ratings. Two people typing the same name stay apart. The project owner sees every review in the Supabase dashboard (Table Editor, `reviews` or `latest_reviews`, export to CSV).
 - **The key stays on the server.** All database calls are made by the app's Python code, with a 10 second timeout and two retries. The key is never sent to the browser and is removed from error messages.
+- **Finished runs.** When a run finishes, the app saves each clip's screenplay excerpt next to it (`transcripts.json`), then uploads the files the interface needs (results, report, CSVs, excerpts and the recommended clips' evaluations) to the private bucket under `<link hash>/<run id>/`, and only then adds a row to `runs`. After a refresh or restart, "Existing runs" lists them as "Saved run: …" under the bundled runs; opening one fetches a copy named after the run, so its reviews still match. The run list and every download are limited to your link's runs: a run cannot be opened by naming it. A run that stopped early or failed is not saved. If saving fails, the page says the results are NOT saved and offers "Save these results again"; until then they exist only on the app's disk.
 - **Outages.** If the database cannot be reached, the review is kept on the app's disk and sent on your next save or page load (it is never stored twice). The page says so. A restart before then would lose it, so download your reviews when warned.
-- **Free tier limits.** A free project is paused after a week without activity (restore it from the dashboard) and has no automatic backups: export the `reviews` table now and then.
+- **Free tier limits.** A free project is paused after a week without activity (restore it from the dashboard) and has no automatic backups: export the tables now and then. Storage is 1 GB; a finished 50 episode run takes well under 1 MB of it.
 - **Moving local reviews.** `python tools/import_reviews_to_supabase.py --reviews PATH --new-link` shows what would be sent and under which link code; add `--yes` to send. The local file is never changed.
 
 ## Change the model

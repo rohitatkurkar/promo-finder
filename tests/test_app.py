@@ -599,3 +599,85 @@ def test_without_supabase_there_is_no_private_link(app):
     app.run()
     assert "k" not in app.query_params
     assert not any(box.label == "Open a saved link" for box in app.text_input)
+
+
+# Runs kept in Supabase (phase 2).
+
+LINK = "my-private-link-code-0001"
+
+
+def _run_sample_in_cloud(tmp_path, monkeypatch, link=LINK):
+    app = _cloud_app(tmp_path, monkeypatch, link=link)
+    app.sidebar.button[0].click().run()  # Basic mode on the sample show.
+    assert not app.exception
+    return app
+
+
+def test_a_finished_run_is_saved_and_reopens_after_a_restart(tmp_path, monkeypatch, cloud_db):
+    import hashlib
+    import shutil
+    app = _run_sample_in_cloud(tmp_path, monkeypatch)
+    assert any("Saved to the app's database" in item.value for item in app.success)
+    row = cloud_db.tables["runs"][0]
+    assert row["owner_hash"] == hashlib.sha256(LINK.encode()).hexdigest() and row["mode"] == "basic"
+    assert any(key.endswith(f"{row['id']}/transcripts.json") for key in cloud_db.objects)
+
+    shutil.rmtree(tmp_path / "outputs" / row["id"])  # A restart wipes the app's disk.
+    again = _cloud_app(tmp_path, monkeypatch, link=LINK)
+    labels = [option for option in _open_run_box(again).options if option.startswith("Saved run:")]
+    assert len(labels) == 1 and "Basic" in labels[0]
+    _open_run_box(again).set_value(labels[0]).run()
+    assert not again.exception
+    assert again.metric[0].value == "3 of 3"
+    assert (tmp_path / "outputs" / "cloud_runs" / row["id"] / "promos.json").exists()
+    expander = next(item for item in again.expander if item.label == "See the screenplay for this clip")
+    assert len(expander.table[0].value) > 0  # Each clip's screenplay, from the saved transcripts.json.
+
+    _save_cloud_review(again)  # A review of the reopened run refers to the same run.
+    assert cloud_db.rows[-1]["run_id"] == row["id"]
+
+
+def test_saved_runs_are_listed_after_the_bundled_ones_and_the_final_run_still_opens_first(tmp_path, monkeypatch, cloud_db):
+    _run_sample_in_cloud(tmp_path, monkeypatch)
+    again = _cloud_app(tmp_path, monkeypatch, link=LINK)
+    options = _open_run_box(again).options
+    bundled = [entry["label"] for entry in _catalog()["runs"]]
+    assert options[:len(bundled)] == bundled and options[len(bundled)].startswith("Saved run:")
+    assert _open_run_box(again).value == next(e["label"] for e in _catalog()["runs"] if e["kind"] == "final")
+
+
+def test_another_link_never_sees_or_opens_my_runs(tmp_path, monkeypatch, cloud_db):
+    _run_sample_in_cloud(tmp_path, monkeypatch)
+    stranger = _cloud_app(tmp_path, monkeypatch, link="someone-elses-link-code-xyz")
+    options = _open_run_box(stranger).options
+    assert not any(option.startswith(("Saved run:", "Your run")) for option in options)
+
+
+def test_a_failed_cloud_save_says_so_and_can_be_retried(tmp_path, monkeypatch, cloud_db):
+    cloud_db.fail_on = "/storage/"
+    app = _run_sample_in_cloud(tmp_path, monkeypatch)
+    assert any("NOT saved to the database" in item.value for item in app.warning)
+    assert not any("Saved to the app's database" in item.value for item in app.success)
+    assert cloud_db.tables["runs"] == []
+    app.run()  # The run list is rebuilt on the next page update.
+    assert any(option.startswith("Your run, not saved:") for option in _open_run_box(app).options)
+    assert any("not saved to the database yet" in item.value for item in app.warning)
+    cloud_db.fail_on = None
+    next(button for button in app.button if button.label == "Save these results again").click().run()
+    assert not app.exception and any("Saved to the app's database" in item.value for item in app.success)
+    assert len(cloud_db.tables["runs"]) == 1
+    assert not any(button.label == "Save these results again" for button in app.button)
+
+
+def test_saved_runs_that_cannot_be_listed_leave_the_app_working(tmp_path, monkeypatch, cloud_db):
+    cloud_db.fail_on = "/rest/v1/runs"
+    app = _cloud_app(tmp_path, monkeypatch, link=LINK)
+    assert any("Your saved runs could not be loaded right now" in item.value for item in app.sidebar.warning)
+    assert app.metric[0].value == "50 of 50"  # The bundled final run still opens.
+
+
+def test_without_supabase_a_finished_run_gets_its_excerpts_and_nothing_is_sent(app, tmp_path):
+    _run_sample(app)
+    run_dir = next(path for path in (tmp_path / "outputs").iterdir() if (path / "promos.json").exists())
+    assert (run_dir / "transcripts.json").exists()
+    assert not any("database" in item.value for item in list(app.success) + list(app.warning))

@@ -136,36 +136,67 @@ SUPABASE_TEST_KEY = "sb_secret_TEST_ONLY_not_a_real_key_0123456789"
 
 
 class FakeSupabase:
-    """Just enough of Supabase's REST API for the reviews table: insert (optionally skipping duplicates) and filtered
-    select. Set `down` to make every call fail like a network outage. No network is used."""
+    """Just enough of Supabase's REST APIs: table insert (optionally skipping duplicates) and filtered select, and
+    private storage upload and download. Set `down` to make every call fail like a network outage, or `fail_on`
+    to make only calls whose URL contains that text fail. No network is used."""
+
+    KEYS = {"reviews": "review_id", "runs": "id"}
 
     def __init__(self):
-        self.rows: list[dict] = []
+        self.tables: dict[str, list[dict]] = {"reviews": [], "runs": []}
+        self.objects: dict[str, bytes] = {}
         self.calls: list[dict] = []
         self.down = False
+        self.fail_on: str | None = None
         self.status: int | None = None  # Answer every call with this HTTP status instead.
 
-    def __call__(self, method, url, params=None, json=None, headers=None, timeout=None):  # noqa: A002
+    @property
+    def rows(self):  # The reviews table, as phase 1 tests read it.
+        return self.tables["reviews"]
+
+    def __call__(self, method, url, params=None, json=None, headers=None, timeout=None, data=None):  # noqa: A002
         import uuid
+        from urllib.parse import unquote
 
         import requests
         self.calls.append({"method": method, "url": url, "params": params, "json": json, "headers": headers})
-        if self.down:
+        if self.down or (self.fail_on and self.fail_on in url):
             raise requests.ConnectionError("connection refused")
         if self.status:
             return FakeResponse(self.status, text="error")
-        assert url.startswith(f"{SUPABASE_TEST_URL}/rest/v1/reviews")
+        assert url.startswith(SUPABASE_TEST_URL)
+        path = url[len(SUPABASE_TEST_URL):]
+        if path.startswith("/storage/v1/object/"):
+            if method == "POST":
+                self.objects[unquote(path[len("/storage/v1/object/"):])] = data
+                return FakeResponse(200, payload={})
+            key = unquote(path[len("/storage/v1/object/authenticated/"):])
+            if key not in self.objects:
+                return FakeResponse(400, text="Object not found")
+            response = FakeResponse(200, payload={})
+            response.content = self.objects[key]
+            return response
+        table = path[len("/rest/v1/"):]
+        rows, key = self.tables[table], self.KEYS[table]
         if method == "POST":
-            stored = {row["review_id"] for row in self.rows}
+            stored = {row[key] for row in rows}
             for row in json:
-                row = dict(row, review_id=str(uuid.UUID(row["review_id"])))
-                if row["review_id"] in stored:
-                    if (params or {}).get("on_conflict") == "review_id":
+                row = dict(row)
+                if table == "reviews":
+                    row["review_id"] = str(uuid.UUID(row["review_id"]))
+                else:
+                    row.setdefault("created_at", f"2026-11-10T10:{len(rows):02d}:00+00:00")
+                if row[key] in stored:
+                    if (params or {}).get("on_conflict") == key:
                         continue
                     return FakeResponse(409, text="duplicate key")
-                self.rows.append(row)
-                stored.add(row["review_id"])
+                rows.append(row)
+                stored.add(row[key])
             return FakeResponse(201, text="")
-        filters = {key: value[3:] for key, value in (params or {}).items() if str(value).startswith("eq.")}
-        found = [row for row in self.rows if all(str(row.get(key)) == value for key, value in filters.items())]
-        return FakeResponse(200, payload=sorted(found, key=lambda row: row["saved_at"]))
+        filters = {name: value[3:] for name, value in (params or {}).items() if str(value).startswith("eq.")}
+        found = [row for row in rows if all(str(row.get(name)) == value for name, value in filters.items())]
+        order = (params or {}).get("order", "")
+        column, _, direction = order.partition(".")
+        if column:
+            found.sort(key=lambda row: row[column], reverse=direction == "desc")
+        return FakeResponse(200, payload=found)

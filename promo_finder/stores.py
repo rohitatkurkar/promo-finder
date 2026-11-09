@@ -1,4 +1,4 @@
-"""Where human reviews are kept: a file on this computer, or the Supabase database on a hosted app.
+"""Where human reviews and finished runs are kept: files on this computer, or Supabase on a hosted app.
 
 Both stores give the interface the same two calls, load and save, so the review screen does not
 care which one is in use.
@@ -12,6 +12,7 @@ The outbox lives on the app's disk, which a hosted app loses on restart, so the 
 from __future__ import annotations
 
 import json
+import shutil
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
@@ -131,3 +132,91 @@ class SupabaseReviewStore:
                 f"The database could not be reached ({error.kind}), so this review is kept on this server for now and "
                 "will be sent automatically on your next save or page load. A restart of a hosted app would lose it, "
                 "so download your reviews to be safe."))
+
+
+# Runs. A finished run's files go to the private bucket under <owner_hash>/<run_id>/, then one row is added to the
+# runs table. The row comes last, so a row always means a complete copy. Runs are listed and opened only by owner.
+
+RUNS_TABLE = "runs"
+BUCKET = "promo-data"
+# The files the interface reads to show a run (the same set the bundled runs keep), plus each recommended clip's
+# evaluation, which holds the AI's clarity rating.
+RUN_FILES = ["promos.json", "processing_summary.json", "promos.csv", "report.md", "top_twenty_human_review_sheet.csv",
+             "transcripts.json"]
+CONTENT_TYPES = {".json": "application/json", ".csv": "text/csv", ".md": "text/markdown"}
+
+
+def run_files(run_dir: str | Path) -> list[str]:
+    """The files of a finished run worth keeping, as paths relative to the run folder."""
+    run_dir = Path(run_dir)
+    names = [name for name in RUN_FILES if (run_dir / name).is_file()]
+    promos = json.loads((run_dir / "promos.json").read_text(encoding="utf-8"))["promos"]
+    names += [f"evaluations/{promo['clip_key']}.json" for promo in promos
+              if (run_dir / "evaluations" / f"{promo['clip_key']}.json").is_file()]
+    return names
+
+
+class SupabaseRunStore:
+    def __init__(self, client: SupabaseClient, bucket: str = BUCKET):
+        self.client = client
+        self.bucket = bucket
+
+    def save(self, run_dir: str | Path, owner_hash: str) -> SaveResult:
+        """Copy a finished run to the database. Safe to repeat: files are replaced and the row is added once."""
+        run_dir = Path(run_dir)
+        names = run_files(run_dir)
+        summary = json.loads((run_dir / "processing_summary.json").read_text(encoding="utf-8"))
+        try:
+            for name in names:
+                self.client.upload(self.bucket, f"{owner_hash}/{run_dir.name}/{name}", (run_dir / name).read_bytes(),
+                                   CONTENT_TYPES.get(Path(name).suffix, "application/octet-stream"))
+            self.client.insert(RUNS_TABLE, [{
+                "id": run_dir.name,
+                "owner_hash": owner_hash,
+                "mode": summary.get("mode", "basic"),
+                "title": summary.get("title", ""),
+                "input_file": summary.get("input_file", ""),
+                "complete": summary.get("complete", True) is not False and not summary.get("stopped_because"),
+                "stopped_because": summary.get("stopped_because"),
+                "episodes_in_pack": summary.get("episodes_in_pack"),
+                "episodes_processed": summary.get("episodes_processed"),
+                "recommended_clips": summary.get("recommended_clips"),
+                "processing_seconds": summary.get("processing_seconds"),
+                "files": names,
+            }], ignore_duplicates_on="id")
+        except CloudError as error:
+            return SaveResult(in_cloud=False, message=f"{error.kind}: {error.detail}")
+        return SaveResult(in_cloud=True)
+
+    def list(self, owner_hash: str) -> list[dict]:
+        """This owner's saved runs, newest first. Raises CloudError when the database cannot be reached."""
+        rows = self.client.select(RUNS_TABLE, {"owner_hash": owner_hash}, order="created_at.desc")
+        return [row for row in rows if row.get("owner_hash") == owner_hash]
+
+    def download(self, row: dict, owner_hash: str, destination: str | Path) -> Path:
+        """Fetch a saved run into destination (named after the run, so reviews keep pointing at it).
+
+        Only the owner's own run is fetched. Files are gathered in a side folder and moved into place at the end,
+        so a failed download never looks like a complete run. Raises CloudError or PermissionError.
+        """
+        if row.get("owner_hash") != owner_hash:
+            raise PermissionError("This run belongs to another private link.")
+        destination = Path(destination)
+        if (destination / "promos.json").is_file():
+            return destination
+        staging = destination.with_name(f"{destination.name}.{uuid.uuid4().hex}.partial")
+        try:
+            for name in row["files"]:
+                if Path(name).is_absolute() or ".." in Path(name).parts:
+                    continue  # Never write outside the run folder, whatever the row says.
+                target = staging / name
+                target.parent.mkdir(parents=True, exist_ok=True)
+                target.write_bytes(self.client.download(self.bucket, f"{owner_hash}/{row['id']}/{name}"))
+            if not (staging / "promos.json").is_file():
+                raise CloudError("rejected", "The saved run has no promos.json.")
+            if destination.exists():
+                shutil.rmtree(destination, ignore_errors=True)
+            staging.replace(destination)
+        finally:
+            shutil.rmtree(staging, ignore_errors=True)
+        return destination

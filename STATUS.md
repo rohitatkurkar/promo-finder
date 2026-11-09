@@ -287,6 +287,17 @@ Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on
 - **Tests:** 284 passed. New: client settings, headers for new and legacy keys, retries, no retry on a refused key, key never in errors; store save and load per link, same name kept apart, newest review wins, outage then send once, review IDs round trip, old reviews load; app: review kept under the link and found after a refresh, a stranger sees none, outage then sent on next load, opening a saved link, no link without Supabase, key never on the page.
 - **Not tested yet:** the real Supabase project.
 
+## 4j. Supabase, phase 2: persistent finished runs (2026-11-10)
+
+**Done and tested locally against a fake of Supabase's REST and Storage APIs. Not committed. Needs `0002_runs.sql` run in the real project.** Phases 3 (cloud resume of interrupted runs) and 4 (backups, quotas, clean-up) are skipped by decision.
+
+- **New:** `supabase/migrations/0002_runs.sql` (`runs` table, private bucket `promo-data`; creates only, nothing dropped or changed), `promo_finder/excerpts.py` (the transcript excerpt builder, moved from `tools/`, which now calls it; output unchanged byte for byte), `SupabaseRunStore` in `promo_finder/stores.py` (save, list by owner, download), storage upload and download in `promo_finder/cloud.py`.
+- **App:** every finished run gets `transcripts.json`. With Supabase, it is then uploaded (files first, row last) and listed after a refresh as "Saved run: …" below the bundled runs; opening it after a restart fetches a copy into `outputs/cloud_runs/<run id>/`, so reviews keep the same run id. A failed save is reported as NOT saved, with "Save these results again". Runs that stopped early are not saved.
+- **Ownership:** runs are listed by the link's hash, downloads refuse a run of another hash, and files sit under `<owner hash>/<run id>/`; the app takes no run id from the address.
+- **Unchanged:** discovery, prompts, scoring, ranking, verification, reviews, local file mode (apart from the new `transcripts.json`).
+- **Tests:** 296 passed. New: stored files and row, identical copy back, another link cannot list or open, failed save adds no row and a retry completes it, failed download leaves no half run, no file outside the run folder, AI run keeps only its recommended clips' evaluations; app: saved run reopens after a simulated restart with its screenplay and reviews, listing order and default run, a stranger sees no runs, failed save reported and retried, listing outage leaves the app working, no cloud calls without Supabase.
+- **Not tested yet:** the real Supabase project and bucket.
+
 ## 5. Two segment promos
 
 Existing pieces (`schema.py`):
