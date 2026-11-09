@@ -235,14 +235,37 @@ def test_ai_run_starts_without_a_password_and_reads_secrets(app, tmp_path):
     assert not any("secret-test-key" in item.value for item in app.error)
 
 
-def test_hosted_ai_runs_are_limited_in_episodes(app, tmp_path):
-    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_MAX_EPISODES": "2", "FINDER_MODEL": "m1", "EVALUATOR_MODEL": "m2"})
-    _find_promos(app)  # Empty box means all 3 sample episodes, over the limit of 2.
-    assert any("at most 2 episode(s)" in item.value for item in app.error)
+def test_hosted_ai_runs_have_no_episode_limit(app, tmp_path):
+    # An old AI_MAX_EPISODES setting is ignored. No models are set, so the run stops at the pipeline's own setup check,
+    # after the episode choice was accepted and before any network call.
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_MAX_EPISODES": "2"})
+    _find_promos(app)  # Empty box: all 3 sample episodes.
+    assert not any("at most" in item.value for item in app.error)
+    assert any("No model set for the finder role" in item.value for item in app.error)
     app.text_input(key="ai_episodes").input("9").run()
     _find_promos(app)
     assert any("Not in this pack" in item.value for item in app.error)
     assert _ai_runs(tmp_path) == []
+
+
+def test_only_one_ai_run_goes_at_a_time(app, tmp_path):
+    from promo_finder.hosting import AI_RUN_LOCK
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key"})
+    assert AI_RUN_LOCK.acquire(blocking=False)  # Another visitor's AI run is going.
+    try:
+        _find_promos(app)
+        assert any("Another AI assisted run is in progress" in item.value for item in app.warning)
+        assert _ai_runs(tmp_path) == [] and not any("No model set" in item.value for item in app.error)
+        next(radio for radio in app.radio if radio.label == "Selection method").set_value("Basic (no API key)").run()
+        _find_promos(app)  # Basic mode is not held up.
+        assert any("Finished" in item.value for item in app.success)
+    finally:
+        AI_RUN_LOCK.release()
+    next(radio for radio in app.radio if radio.label == "Selection method").set_value("AI assisted").run()
+    _find_promos(app)
+    assert any("No model set for the finder role" in item.value for item in app.error)
+    assert AI_RUN_LOCK.acquire(blocking=False)  # Released after that run ended with an error.
+    AI_RUN_LOCK.release()
 
 
 # Sidebar layout.

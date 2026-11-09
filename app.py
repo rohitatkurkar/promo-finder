@@ -15,7 +15,7 @@ from dotenv import dotenv_values
 from pydantic import ValidationError
 
 from promo_finder.boundaries import cues_in_range
-from promo_finder.hosting import has_api_key, max_episodes, merge_settings, parse_episode_selection
+from promo_finder.hosting import AI_RUN_LOCK, has_api_key, merge_settings, parse_episode_selection
 from promo_finder.llm_client import LLMError
 from promo_finder.parser import ACTION, CAMERA, DIALOGUE, ScreenplayPackError, format_timestamp, load_pack
 from promo_finder.pipeline import DEFAULT_ENV, pack_title, run_ai_pipeline, run_basic_pipeline
@@ -212,9 +212,7 @@ with st.sidebar:
                    "and to a model provider only in AI assisted mode.")
         mode = st.radio("Selection method", ["Basic (no API key)", "AI assisted"])
         fresh = False
-        settings, key_from_secrets = load_settings()
-        # On a hosted app (key in the host's secrets) each AI run is limited in episodes, to protect the free model quota.
-        limit = max_episodes(settings) if key_from_secrets else None
+        settings, _ = load_settings()
         episode_text = ""
         if mode == "AI assisted":
             if has_api_key(settings):
@@ -223,8 +221,8 @@ with st.sidebar:
                 st.warning("No API key found. Copy .env.example to .env and add a key, or use Basic mode.")
             st.caption("Choosing AI assisted mode starts nothing. Models are called only when you click Find promos.")
             episode_text = st.text_input(
-                "Episodes to process", key="ai_episodes", placeholder="All" if limit is None else f"For example 1-{limit}",
-                help="For example 1-3,5. Leave empty for every episode." + (f" This app allows at most {limit} per run." if limit else ""),
+                "Episodes to process", key="ai_episodes", placeholder="All",
+                help="For example 1-3,5. Leave empty for every episode in the pack.",
             )
             fresh = st.checkbox("Ask the models again instead of reusing saved answers")
         st.button("Find promos", type="primary", use_container_width=True, on_click=start_new_run)
@@ -250,10 +248,6 @@ if run_clicked and mode == "AI assisted" and source_path is not None:
         if problem:
             st.error(f"AI assisted run not started. {problem}")
             run_clicked = False
-        elif limit is not None and len(selection) > limit:
-            st.error(f"AI assisted run not started. This app allows at most {limit} episode(s) per AI run, to stay within the "
-                     f"free model quota. Choose episodes, for example 1-{limit}.")
-            run_clicked = False
 
 # A job is a new run, or the unfinished one being resumed. It is remembered until it completes, so a run that was
 # interrupted (a click elsewhere, a rate limit) can be resumed in the same folder.
@@ -273,43 +267,57 @@ elif run_clicked:
         job = {"run_dir": str(new_run_dir(OUTPUT_ROOT, short_mode)), "mode": short_mode, "source": str(source_path),
                "episodes": sorted(selection) if selection else None, "fresh": fresh}
 
+# AI runs go one at a time per app: they share one API key, so runs side by side only trip its rate limits.
+ai_lock_held = False
+if job and job["mode"] == "ai":
+    ai_lock_held = AI_RUN_LOCK.acquire(blocking=False)
+    if not ai_lock_held:
+        st.warning("Another AI assisted run is in progress on this app. AI runs go one at a time because they share one "
+                   "API key and its rate limits. Try again when it has finished; Basic mode works meanwhile.")
+        job = None
+
 if job:
-    run_dir = Path(job["run_dir"])
-    st.session_state["resumable"] = job
-    if run_dir.name not in my_runs:
-        my_runs.append(run_dir.name)
-    bar = st.progress(0.0, text="Starting")
-
-    def show_progress(done: int, total: int, label: str) -> None:
-        bar.progress(min(done / max(total, 1), 1.0), text=label)
-
     try:
-        if job["mode"] == "basic":
-            summary = run_basic_pipeline(job["source"], run_dir, on_progress=show_progress)
-        else:
-            summary = run_ai_pipeline(job["source"], run_dir, use_cache=not job["fresh"], cache_dir=OUTPUT_ROOT / "llm_cache",
-                                      on_progress=show_progress, only_episodes=set(job["episodes"]) if job["episodes"] else None,
-                                      env_values=settings)
-        bar.empty()
-        st.session_state["current_run"] = str(run_dir)
-        if summary.get("stopped_because"):
-            st.warning(f"The run stopped early: {summary['stopped_because']} Saved progress is kept: use Resume unfinished run "
-                       "in the sidebar to continue it.")
-        elif summary.get("complete") is False:
-            st.warning("The run finished with some failures. See the processing summary below. Resume unfinished run retries them.")
-        else:
+        run_dir = Path(job["run_dir"])
+        st.session_state["resumable"] = job
+        if run_dir.name not in my_runs:
+            my_runs.append(run_dir.name)
+        bar = st.progress(0.0, text="Starting")
+
+        def show_progress(done: int, total: int, label: str) -> None:
+            bar.progress(min(done / max(total, 1), 1.0), text=label)
+
+        try:
+            if job["mode"] == "basic":
+                summary = run_basic_pipeline(job["source"], run_dir, on_progress=show_progress)
+            else:
+                summary = run_ai_pipeline(job["source"], run_dir, use_cache=not job["fresh"], cache_dir=OUTPUT_ROOT / "llm_cache",
+                                          on_progress=show_progress, only_episodes=set(job["episodes"]) if job["episodes"] else None,
+                                          env_values=settings)
+            bar.empty()
+            st.session_state["current_run"] = str(run_dir)
+            if summary.get("stopped_because"):
+                st.warning(f"The run stopped early: {summary['stopped_because']} Saved progress is kept: use Resume unfinished run "
+                           "in the sidebar to continue it.")
+            elif summary.get("complete") is False:
+                st.warning("The run finished with some failures. See the processing summary below. Resume unfinished run retries them.")
+            else:
+                st.session_state.pop("resumable", None)
+                st.success(f"Finished in {summary['processing_seconds']} seconds.")
+        except ScreenplayPackError as error:
+            bar.empty()
             st.session_state.pop("resumable", None)
-            st.success(f"Finished in {summary['processing_seconds']} seconds.")
-    except ScreenplayPackError as error:
-        bar.empty()
-        st.session_state.pop("resumable", None)
-        st.error(f"Could not read this pack. {error}")
-    except LLMError as error:
-        bar.empty()
-        st.session_state.pop("resumable", None)
-        if run_dir.exists():
-            shutil.rmtree(run_dir, ignore_errors=True)
-        st.error(f"AI assisted mode could not start. {error.detail}")
+            st.error(f"Could not read this pack. {error}")
+        except LLMError as error:
+            bar.empty()
+            st.session_state.pop("resumable", None)
+            if run_dir.exists():
+                shutil.rmtree(run_dir, ignore_errors=True)
+            st.error(f"AI assisted mode could not start. {error.detail}")
+    finally:
+        if ai_lock_held:
+            AI_RUN_LOCK.release()
+
 
 unfinished = st.session_state.get("resumable")
 if unfinished:

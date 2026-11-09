@@ -97,7 +97,7 @@ Optional settings, set in the shell before starting:
 | `PROMO_BLIND_REVIEW_DEFAULT` | `1` starts with blind review mode on |
 | `PROMO_REVIEW_SET` | A JSON file with `run_id` and `clip_keys`. For that run, the clip list is limited to those clips (a checkbox turns this off), with Previous and Next buttons and a progress count |
 
-AI assisted mode in the interface has an "Episodes to process" box (for example `1-3`). Empty means every episode. When the key comes from a host's secrets, each run may process at most `AI_MAX_EPISODES` episodes (default 3). Choosing AI assisted mode starts nothing; models are called only when Find promos is clicked.
+AI assisted mode in the interface has an "Episodes to process" box (for example `1-3`). Empty means every episode in the pack; there is no episode limit, locally or hosted. Choosing AI assisted mode starts nothing; models are called only when Find promos is clicked. One AI run goes at a time per app: a second one is refused with a message (Basic mode is not affected), because every run shares one API key and its rate limits.
 
 ## Deploy on Streamlit Community Cloud
 
@@ -112,7 +112,7 @@ The app runs on Streamlit Community Cloud (free) from this repository, with `app
 How the hosted app behaves:
 
 - **Basic mode, the demo, transcripts and human review** need no key.
-- **AI assisted mode** is open to anyone with the link, with no password. Every AI run spends the owner's Groq free-tier quota, so strangers can use it up; when the quota or rate limit is reached, runs stop early and keep their progress. Each run is limited to `AI_MAX_EPISODES` episodes. To close AI mode, remove the key from the secrets.
+- **AI assisted mode** is open to anyone with the link, with no password. Every AI run spends the owner's Groq free-tier quota, so strangers can use it up; when the quota or rate limit is reached, runs stop early and keep their progress. There is no episode limit, so one run on a large pack can use a large share of the quota. One AI run goes at a time. To close AI mode, remove the key from the secrets.
 - **Storage is temporary.** Runs and reviews saved on the hosted app are wiped when it restarts, when it sleeps (after 12 hours without visitors) and on every redeploy, because Community Cloud restarts from a fresh copy of the repository. Download reviews with the export buttons to keep them.
 - **Storage is shared.** Everyone using the hosted app sees the same saved runs and reviews. With blind review mode off, the comparison table shows every reviewer's ratings and comments, and runs other visitors made appear under "Earlier runs".
 - **Uploads go to the host.** A ZIP uploaded to the hosted app is sent to Streamlit's servers, and in AI assisted mode to the model provider. Do not upload confidential scripts to a public app.

@@ -266,6 +266,16 @@ Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on
 - **Browser check:** a ZIP put in the uploader ran Basic mode to results, its clips' screenplay showed, and several refreshes left one upload copy.
 - **Still open (later phases):** hosted runs and reviews are still lost on restart; reviews are still shared by every visitor and reviewer names are not checked.
 
+## 4h. No episode limit for AI runs; one AI run at a time (2026-11-10)
+
+**Done and tested locally. Not committed.** By decision: public visitors may now use more of the Groq free quota.
+
+- **Removed:** the hosted `AI_MAX_EPISODES` cap (default 3) and `hosting.max_episodes`. An AI run processes every episode chosen, or the whole pack, locally and hosted alike. An old `AI_MAX_EPISODES` secret is ignored.
+- **One AI run at a time per app** (`hosting.AI_RUN_LOCK`, taken without waiting): every run shares one API key, and each run paces itself to the per-minute limits alone, so runs side by side would trip the limits for each other. A second AI run is refused with a message; Basic mode is not held up. The lock is released however the run ends.
+- **Cache fix:** model replies are now written to the cache aside and put in place in one step. Before, a run could read another run's half-written reply and crash with a JSON error.
+- **Unchanged:** models, prompts, scoring, ranking, discovery, ZIP limits, key handling, retries and error handling.
+- **Tests:** 264 passed. New: no episode limit on a hosted app, one AI run at a time (Basic still runs), whole cache files.
+
 ## 5. Two segment promos
 
 Existing pieces (`schema.py`):

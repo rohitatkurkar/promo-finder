@@ -325,3 +325,11 @@ def test_a_complete_reply_is_not_asked_again():
 
     LLMClient(config(max_output_tokens=2000), transport=transport, sleep=lambda _: None).chat_json("s", "u", "p", "v1")
     assert seen == [2000]
+
+
+def test_cache_files_are_written_whole_and_leave_no_temporary_files(tmp_path):
+    # Another run may read the cache at any moment, so a reply is written aside and put in place in one step.
+    client(Script(ok_reply('{"a": 1}')), tmp_path).chat_json("s", "u", "p", "v1")
+    cached = [path for path in tmp_path.iterdir() if path.suffix == ".json"]
+    assert len(cached) == 1 and json.loads(cached[0].read_text(encoding="utf-8"))["data"] == {"a": 1}
+    assert not list(tmp_path.glob("*.tmp"))

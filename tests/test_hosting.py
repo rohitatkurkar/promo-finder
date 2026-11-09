@@ -1,4 +1,4 @@
-"""Hosted settings: .env plus Streamlit secrets, and the episode limit."""
+"""Hosted settings: .env plus Streamlit secrets, and the episode choice."""
 
 import json
 
@@ -6,9 +6,7 @@ import pytest
 from conftest import FakeProvider
 
 from promo_finder.hosting import (
-    DEFAULT_MAX_EPISODES,
     has_api_key,
-    max_episodes,
     merge_settings,
     parse_episode_selection,
 )
@@ -18,9 +16,9 @@ from promo_finder.pipeline import run_ai_pipeline
 def test_secrets_win_over_the_local_file_and_sections_are_ignored():
     merged = merge_settings(
         {"LLM_API_KEY": "local-key", "FINDER_MODEL": "local-model", "EMPTY": "", "NONE": None},
-        {"LLM_API_KEY": "secret-key", "AI_MAX_EPISODES": 2, "connections": {"db": "x"}},
+        {"LLM_API_KEY": "secret-key", "LLM_REQUESTS_PER_MINUTE": 2, "connections": {"db": "x"}},
     )
-    assert merged == {"LLM_API_KEY": "secret-key", "FINDER_MODEL": "local-model", "AI_MAX_EPISODES": "2"}
+    assert merged == {"LLM_API_KEY": "secret-key", "FINDER_MODEL": "local-model", "LLM_REQUESTS_PER_MINUTE": "2"}
 
 
 def test_api_key_detection():
@@ -28,12 +26,6 @@ def test_api_key_detection():
     assert has_api_key({"FINDER_API_KEY": "a", "EVALUATOR_API_KEY": "b"})
     assert not has_api_key({"FINDER_API_KEY": "a"})
     assert not has_api_key({})
-
-
-@pytest.mark.parametrize("value, expected", [(None, DEFAULT_MAX_EPISODES), ("5", 5), ("0", 1), ("lots", DEFAULT_MAX_EPISODES)])
-def test_episode_limit(value, expected):
-    settings = {} if value is None else {"AI_MAX_EPISODES": value}
-    assert max_episodes(settings) == expected
 
 
 @pytest.mark.parametrize("text, expected", [

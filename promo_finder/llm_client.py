@@ -14,6 +14,7 @@ import json
 import os
 import re
 import time
+import uuid
 from collections import deque
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -499,8 +500,11 @@ class LLMClient:
                              "finish_reason": finish_reason})
             if self.use_cache and cache_path is not None:
                 cache_path.parent.mkdir(parents=True, exist_ok=True)
-                cache_path.write_text(json.dumps({"data": data, "raw_text": text, "input_tokens": input_tokens,
-                                                  "output_tokens": output_tokens}, ensure_ascii=False), encoding="utf-8", newline="\n")
+                # Written aside, then put in place in one step, so another run reading the cache never sees half a file.
+                temporary = cache_path.with_name(f"{cache_path.name}.{uuid.uuid4().hex}.tmp")
+                temporary.write_text(json.dumps({"data": data, "raw_text": text, "input_tokens": input_tokens,
+                                                 "output_tokens": output_tokens}, ensure_ascii=False), encoding="utf-8", newline="\n")
+                os.replace(temporary, cache_path)
             return LLMResult(data, text, False, input_tokens, output_tokens, attempts)
 
         error = last_error or LLMError("unknown", "The call failed for an unknown reason")

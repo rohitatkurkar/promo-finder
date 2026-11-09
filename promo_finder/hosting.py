@@ -3,17 +3,20 @@
 AI settings come from the local .env file and, when present, from Streamlit secrets, which win.
 On a hosted app the key lives only in the host's secrets store, never in the repository.
 
-AI mode is open to every visitor and spends the owner's free model quota, so on a hosted app
-each AI run is limited to AI_MAX_EPISODES episodes.
+AI mode is open to every visitor, with no episode limit, and spends the owner's free model quota.
+Only one AI run goes at a time per app (AI_RUN_LOCK): every run uses the same key, so runs side by
+side would only trip the provider's per-minute limits for each other.
 """
 
 from __future__ import annotations
 
+import threading
 from collections.abc import Mapping
 
-MAX_EPISODES = "AI_MAX_EPISODES"
-DEFAULT_MAX_EPISODES = 3
 KEY_NAMES = ("LLM_API_KEY", "FINDER_API_KEY", "EVALUATOR_API_KEY")
+
+# Shared by every session of this app process. Taken without waiting: a second AI run is refused, not queued.
+AI_RUN_LOCK = threading.Lock()
 
 
 def merge_settings(dotenv: Mapping, secrets: Mapping) -> dict[str, str]:
@@ -31,14 +34,6 @@ def merge_settings(dotenv: Mapping, secrets: Mapping) -> dict[str, str]:
 
 def has_api_key(settings: Mapping) -> bool:
     return bool(settings.get("LLM_API_KEY") or (settings.get("FINDER_API_KEY") and settings.get("EVALUATOR_API_KEY")))
-
-
-def max_episodes(settings: Mapping) -> int:
-    try:
-        value = int(settings.get(MAX_EPISODES, DEFAULT_MAX_EPISODES))
-    except (TypeError, ValueError):
-        return DEFAULT_MAX_EPISODES
-    return max(1, value)
 
 
 def parse_episode_selection(text: str, available: list[int]) -> tuple[set[int] | None, str]:
