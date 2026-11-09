@@ -131,7 +131,7 @@ def _catalog():
 
 
 def _open_run_box(app):
-    return next(box for box in app.sidebar.selectbox if box.label == "Open a run")
+    return next(box for box in app.sidebar.selectbox if box.label == "Open an existing run")
 
 
 def test_the_final_run_opens_by_default(app):
@@ -171,6 +171,7 @@ def test_every_bundled_run_can_be_opened_and_shows_its_own_results(app):
             evaluation = json.loads((folder / "evaluations" / f"{first['clip_key']}.json").read_text(encoding="utf-8"))
             assert evaluation["hook_rating"] == first["hook"]["rating_out_of_5"]
             assert any("not published with the app" in item.value for item in app.caption)
+            assert len(_expander_table(app)) > 0
 
 
 def test_a_new_run_is_shown_and_the_final_run_can_be_reopened(app):
@@ -217,45 +218,114 @@ def _ai_runs(tmp_path):
     return [path for path in folder.iterdir() if path.name.startswith("ai_")] if folder.exists() else []
 
 
-def test_hosted_key_without_password_keeps_ai_off(app, tmp_path):
+def test_ai_mode_needs_no_password_and_choosing_it_starts_nothing(app, tmp_path):
     _choose_ai(app, {"LLM_API_KEY": "secret-test-key"})
     assert any("An API key is configured" in item.value for item in app.success)
-    assert any("switched off" in item.value for item in app.info)
-    _find_promos(app)
-    assert any("AI assisted run not started" in item.value for item in app.error)
-    assert _ai_runs(tmp_path) == []
+    assert not any("password" in box.label.lower() for box in app.text_input)
+    assert any("starts nothing" in item.value for item in app.caption)
+    assert _ai_runs(tmp_path) == []  # Choosing the mode called no model and made no run.
+    assert app.metric[0].value == "50 of 50"  # The final run is still shown.
 
 
-def test_wrong_or_missing_password_starts_nothing(app, tmp_path):
-    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_ACCESS_PASSWORD": "right-password"})
-    _find_promos(app)
-    assert any("Enter the AI access password" in item.value for item in app.error)
-    app.text_input(key="ai_password").input("wrong-password").run()
-    _find_promos(app)
-    assert any("Incorrect AI access password" in item.value for item in app.error)
-    assert _ai_runs(tmp_path) == []
-
-
-def test_correct_password_passes_the_gate_and_reads_secrets(app, tmp_path):
+def test_ai_run_starts_without_a_password_and_reads_secrets(app, tmp_path):
     # No models are set, so the pipeline stops at its own setup check before any network call.
-    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_ACCESS_PASSWORD": "right-password"})
-    app.text_input(key="ai_password").input("right-password").run()
-    assert any("unlocked" in item.value for item in app.success)
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key"})
     _find_promos(app)
     assert any("No model set for the finder role" in item.value for item in app.error)
     assert not any("secret-test-key" in item.value for item in app.error)
 
 
 def test_hosted_ai_runs_are_limited_in_episodes(app, tmp_path):
-    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_ACCESS_PASSWORD": "pw", "AI_MAX_EPISODES": "2",
-                     "FINDER_MODEL": "m1", "EVALUATOR_MODEL": "m2"})
-    app.text_input(key="ai_password").input("pw").run()
+    _choose_ai(app, {"LLM_API_KEY": "secret-test-key", "AI_MAX_EPISODES": "2", "FINDER_MODEL": "m1", "EVALUATOR_MODEL": "m2"})
     _find_promos(app)  # Empty box means all 3 sample episodes, over the limit of 2.
     assert any("at most 2 episode(s)" in item.value for item in app.error)
     app.text_input(key="ai_episodes").input("9").run()
     _find_promos(app)
     assert any("Not in this pack" in item.value for item in app.error)
     assert _ai_runs(tmp_path) == []
+
+
+# Sidebar layout.
+
+def test_sidebar_sections_come_in_order_and_new_run_is_folded(app):
+    app.run()
+    headers = [item.value for item in app.sidebar.header]
+    assert headers == ["Existing runs", "Human review"]
+    assert any(item.value == "Reviews apply to the currently selected run." for item in app.sidebar.caption)
+    expander = next(item for item in app.sidebar.expander if item.label == "Run on a new screenplay pack")
+    assert expander.proto.expanded is False
+    assert [button.label for button in expander.button] == ["Find promos"]
+    assert {box.label for box in expander.checkbox} >= {"Use the built in invented sample show"}
+    assert any(radio.label == "Selection method" for radio in expander.radio)
+
+
+def test_reviewer_settings_do_not_change_the_open_run(app):
+    app.run()
+    trial = next(entry for entry in _catalog()["runs"] if entry["folder"].startswith("ai_trial"))
+    _open_run_box(app).set_value(trial["label"]).run()
+    app.text_input(key="reviewer").input("someone").run()
+    app.checkbox(key="blind_review").check().run()
+    app.checkbox(key="blind_review").uncheck().run()
+    assert not app.exception
+    assert _open_run_box(app).value == trial["label"] and app.metric[0].value == "1 of 50"
+
+
+# Screenplay excerpts bundled with the demo runs.
+
+def _expander_table(app):
+    expander = next(item for item in app.expander if item.label == "See the screenplay for this clip")
+    assert expander.proto.expanded is False
+    return expander.table[0].value
+
+
+def test_every_bundled_run_has_an_excerpt_for_every_promo():
+    for entry in _catalog()["runs"]:
+        folder = ROOT / "demo_runs" / entry["folder"]
+        promos = json.loads((folder / "promos.json").read_text(encoding="utf-8"))["promos"]
+        excerpts = json.loads((folder / "transcripts.json").read_text(encoding="utf-8"))
+        assert excerpts["run_id"] == entry["folder"]
+        assert set(excerpts["clips"]) == {p["clip_key"] for p in promos}
+        for promo in promos:
+            clip = excerpts["clips"][promo["clip_key"]]
+            assert clip["promo_id"] == promo["promo_id"]
+            ids = [cue["cue_id"] for part in clip["segments"] for cue in part["cues"]]
+            assert promo["hook"]["cue_ids"][0] in ids and promo["cliffhanger"]["cue_ids"][0] in ids
+            for part, segment in zip(clip["segments"], promo["segments"]):
+                assert part["episode"] == segment["episode"]
+                assert all(cue_id.startswith(f"E{segment['episode']:02d}_") for cue_id in (c["cue_id"] for c in part["cues"]))
+                assert all(c["end"] > segment["start_seconds"] and c["start"] < segment["end_seconds"] for c in part["cues"])
+
+
+def test_excerpts_match_the_screenplay_they_came_from(tmp_path):
+    # The sample show's pack is public, so its bundled excerpts can be rebuilt and compared exactly.
+    import sys
+    sys.path.insert(0, str(ROOT / "tools"))
+    from build_transcript_excerpts import build_excerpts
+    folder = ROOT / "demo_runs" / "basic_sample_show"
+    rebuilt = build_excerpts(ROOT / "sample_input" / "synthetic_show.zip", folder)
+    assert rebuilt == json.loads((folder / "transcripts.json").read_text(encoding="utf-8"))
+
+
+def test_the_final_run_shows_each_clips_screenplay(app):
+    app.run()
+    folder = ROOT / "demo_runs" / _catalog()["default"]
+    promos = json.loads((folder / "promos.json").read_text(encoding="utf-8"))["promos"]
+    chooser = next(box for box in app.selectbox if box.label == "Choose a clip")
+    for index in (0, len(promos) - 1):
+        chooser.set_value(chooser.options[index]).run()
+        table = _expander_table(app)
+        assert promos[index]["hook"]["cue_ids"][0] in table.index
+        assert promos[index]["cliffhanger"]["cue_ids"][0] in table.index
+        assert {"Start", "End", "Type", "Speaker", "Delivery", "Text"} <= set(table.columns)
+        chooser = next(box for box in app.selectbox if box.label == "Choose a clip")
+
+
+def test_blind_mode_still_shows_the_screenplay_but_hides_ai_judgement(app):
+    app.run()
+    app.checkbox(key="blind_review").check().run()
+    assert not app.exception
+    assert len(_expander_table(app)) > 0
+    assert not any("Score breakdown" in item.value or "Why it could work" in item.value for item in app.markdown)
 
 
 # Optional settings for a local review session.

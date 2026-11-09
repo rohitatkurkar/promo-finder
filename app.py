@@ -16,7 +16,7 @@ from dotenv import dotenv_values
 from pydantic import ValidationError
 
 from promo_finder.boundaries import cues_in_range
-from promo_finder.hosting import ai_access, has_api_key, max_episodes, merge_settings, parse_episode_selection
+from promo_finder.hosting import has_api_key, max_episodes, merge_settings, parse_episode_selection
 from promo_finder.llm_client import LLMError
 from promo_finder.parser import ACTION, CAMERA, DIALOGUE, ScreenplayPackError, format_timestamp, load_pack
 from promo_finder.pipeline import DEFAULT_ENV, pack_title, run_ai_pipeline, run_basic_pipeline
@@ -47,6 +47,8 @@ REVIEW_SET_FILE = os.environ.get("PROMO_REVIEW_SET")  # JSON with "run_id" and "
 DEFAULT_RUN = os.environ.get("PROMO_DEFAULT_RUN")  # A run folder to open first instead of the bundled default.
 SAMPLE = ROOT / "sample_input" / "synthetic_show.zip"
 KIND_ICON = {DIALOGUE: "Line", ACTION: "Action", CAMERA: "Shot"}
+# A bundled run may hold the screenplay cues of its own clips (made by tools/build_transcript_excerpts.py), not the whole pack.
+EXCERPTS_FILE = "transcripts.json"
 RATING_FIELDS = [
     ("hook_quality", "Hook quality"),
     ("cliffhanger_quality", "Cliffhanger quality"),
@@ -100,6 +102,26 @@ def cached_pack(path: str, modified: float):
     return {episode.number: episode for episode in episodes}
 
 
+@st.cache_data(show_spinner=False)
+def load_excerpts(path: str, modified: float, run_id: str) -> dict:
+    """Clip key to that clip's screenplay cues, from a run's transcripts.json. Empty if the file belongs to another run."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    return data.get("clips", {}) if data.get("run_id") == run_id else {}
+
+
+def transcript_table(cues: list[dict]) -> pd.DataFrame:
+    rows = [{
+        "Cue": cue["cue_id"], "Start": format_timestamp(cue["start"]), "End": format_timestamp(cue["end"]),
+        "Type": KIND_ICON.get(cue["kind"], str(cue["kind"]).title()), "Speaker": cue["speaker"] or "",
+        "Delivery": cue["delivery"] or "", "Text": cue["text"],
+    } for cue in cues]
+    return pd.DataFrame(rows).set_index("Cue")
+
+
+def start_new_run() -> None:
+    st.session_state["run_requested"] = True
+
+
 def load_review_set(run_id: str) -> list[str] | None:
     """The clip_keys of the review set for this run, if PROMO_REVIEW_SET names one. Otherwise None."""
     if not REVIEW_SET_FILE or not Path(REVIEW_SET_FILE).is_file():
@@ -121,38 +143,12 @@ def story_order(promo: dict) -> tuple:
     return segment["episode"], segment["start_seconds"]
 
 
+# Set by the Find promos button's callback, which runs before the script, so the run list can offer the new run.
+run_clicked = st.session_state.pop("run_requested", False)
+
 with st.sidebar:
-    st.header("1. Choose a screenplay pack")
-    uploaded = st.file_uploader("Screenplay ZIP", type="zip")
-    use_sample = st.checkbox("Use the built in invented sample show", value=uploaded is None)
-    st.caption("An uploaded file goes to the computer running this app (on a hosted app, the host's server), "
-               "and to a model provider only in AI assisted mode.")
-
-    st.header("2. Choose a mode")
-    mode = st.radio("Selection method", ["Basic (no API key)", "AI assisted"], label_visibility="collapsed")
-    fresh = False
-    settings, key_from_secrets = load_settings()
-    access = None
-    episode_text = ""
-    if mode == "AI assisted":
-        if has_api_key(settings):
-            st.success("An API key is configured.")
-        else:
-            st.warning("No API key found. Copy .env.example to .env and add a key, or use Basic mode.")
-        entered = st.text_input("AI access password", type="password", key="ai_password") if settings.get("AI_ACCESS_PASSWORD") else ""
-        access = ai_access(settings, key_from_secrets, entered)
-        if access.message:
-            (st.success if access.allowed else st.info)(access.message)
-        limit = max_episodes(settings) if access.needs_password else None
-        episode_text = st.text_input(
-            "Episodes to process", key="ai_episodes", placeholder="All" if limit is None else f"For example 1-{limit}",
-            help="For example 1-3,5. Leave empty for every episode." + (f" This app allows at most {limit} per run." if limit else ""),
-        )
-        fresh = st.checkbox("Ask the models again instead of reusing saved answers")
-
-    run_clicked = st.button("Find promos", type="primary", use_container_width=True)
-
-    st.header("Earlier runs")
+    # 1. Existing runs. Opening one only reads its saved results: nothing is processed and no model is called.
+    st.header("Existing runs")
     runs = existing_runs()
     run_paths = dict(runs)
     run_options = [label for label, _ in runs]
@@ -169,14 +165,43 @@ with st.sidebar:
         st.session_state.pop("open_run", None)
     # The final run opens by default. A remembered choice is used as is (Streamlit warns if both are given).
     start = {} if "open_run" in st.session_state else {"index": run_options.index(default_label) if default_label in run_options else 0}
-    chosen_run = st.selectbox("Open a run", run_options, key="open_run", **start) if run_options else None
+    chosen_run = st.selectbox("Open an existing run", run_options, key="open_run", **start) if run_options else None
 
+    # 2. Human review of the run chosen above.
+    st.divider()
     st.header("Human review")
     reviewer = st.text_input("Reviewer name or ID", key="reviewer", help="Saved with each review, so several people can review the same run.")
     blind = st.checkbox(
         "Blind review mode", key="blind_review", value=BLIND_BY_DEFAULT,
         help="Hides the AI's rank, scores, ratings and explanations, and lists clips in story order, so they cannot sway your rating.",
     )
+    st.caption("Reviews apply to the currently selected run.")
+
+    # 3. A new run: a separate activity, folded away.
+    st.divider()
+    with st.expander("Run on a new screenplay pack", expanded=False):
+        uploaded = st.file_uploader("Screenplay ZIP", type="zip")
+        use_sample = st.checkbox("Use the built in invented sample show", value=uploaded is None)
+        st.caption("An uploaded file goes to the computer running this app (on a hosted app, the host's server), "
+                   "and to a model provider only in AI assisted mode.")
+        mode = st.radio("Selection method", ["Basic (no API key)", "AI assisted"])
+        fresh = False
+        settings, key_from_secrets = load_settings()
+        # On a hosted app (key in the host's secrets) each AI run is limited in episodes, to protect the free model quota.
+        limit = max_episodes(settings) if key_from_secrets else None
+        episode_text = ""
+        if mode == "AI assisted":
+            if has_api_key(settings):
+                st.success("An API key is configured.")
+            else:
+                st.warning("No API key found. Copy .env.example to .env and add a key, or use Basic mode.")
+            st.caption("Choosing AI assisted mode starts nothing. Models are called only when you click Find promos.")
+            episode_text = st.text_input(
+                "Episodes to process", key="ai_episodes", placeholder="All" if limit is None else f"For example 1-{limit}",
+                help="For example 1-3,5. Leave empty for every episode." + (f" This app allows at most {limit} per run." if limit else ""),
+            )
+            fresh = st.checkbox("Ask the models again instead of reusing saved answers")
+        st.button("Find promos", type="primary", use_container_width=True, on_click=start_new_run)
 
 source_path = None
 if uploaded is not None and not use_sample:
@@ -189,25 +214,20 @@ elif use_sample and SAMPLE.exists():
 selection = None
 if run_clicked and mode == "AI assisted" and source_path is not None:
     # Checked before anything is sent: AI runs spend the owner's model quota.
-    if not access.allowed:
-        st.error(f"AI assisted run not started. {access.message}")
+    try:
+        available = sorted(cached_pack(str(source_path), source_path.stat().st_mtime))
+    except ScreenplayPackError as error:
+        st.error(f"Could not read this pack. {error}")
         run_clicked = False
     else:
-        try:
-            available = sorted(cached_pack(str(source_path), source_path.stat().st_mtime))
-        except ScreenplayPackError as error:
-            st.error(f"Could not read this pack. {error}")
+        selection, problem = parse_episode_selection(episode_text, available)
+        if problem:
+            st.error(f"AI assisted run not started. {problem}")
             run_clicked = False
-        else:
-            selection, problem = parse_episode_selection(episode_text, available)
-            limit = max_episodes(settings) if access.needs_password else None
-            if problem:
-                st.error(f"AI assisted run not started. {problem}")
-                run_clicked = False
-            elif limit is not None and len(selection) > limit:
-                st.error(f"AI assisted run not started. This app allows at most {limit} episode(s) per AI run, to stay within the "
-                         f"free model quota. Choose episodes, for example 1-{limit}.")
-                run_clicked = False
+        elif limit is not None and len(selection) > limit:
+            st.error(f"AI assisted run not started. This app allows at most {limit} episode(s) per AI run, to stay within the "
+                     f"free model quota. Choose episodes, for example 1-{limit}.")
+            run_clicked = False
 
 if run_clicked:
     if source_path is None:
@@ -254,13 +274,14 @@ elif chosen_run:
     run_to_show = run_paths[chosen_run]
 
 if run_to_show is None or not (run_to_show / "promos.json").exists():
-    st.info("Choose a pack and click Find promos. The built in sample show works without any key.")
+    st.info("Open \"Run on a new screenplay pack\" in the sidebar, choose a pack and click Find promos. "
+            "The built in sample show works without any key.")
     st.stop()
 
 if run_to_show.parent == DEMO_ROOT:
     entry = demo_catalog()["entries"].get(run_to_show.name, {})
     message = entry.get("description") or "A precomputed run saved with the app."
-    message += " To make your own run, choose a pack in the sidebar and click Find promos."
+    message += " To make your own run, open \"Run on a new screenplay pack\" in the sidebar and click Find promos."
     (st.success if entry.get("kind") == "final" else st.info)(message)
 
 data = json.loads((run_to_show / "promos.json").read_text(encoding="utf-8"))
@@ -356,7 +377,7 @@ if promos:
     segment = selected["segments"][0]
     if blind:
         st.markdown(f"**Episode {segment['episode']}, {segment['start_timestamp']} to {segment['end_timestamp']}** "
-                    f"({selected['total_duration_seconds']:.1f}s). Read the full clip below before rating it.")
+                    f"({selected['total_duration_seconds']:.1f}s). The full clip is under \"See the screenplay for this clip\" below.")
     else:
         left, right = st.columns([3, 2])
         with left:
@@ -378,13 +399,23 @@ if promos:
                 st.markdown("**What the blind viewer understood**")
                 st.write({"who": check["who_appears_involved"], "what": check["what_is_happening"], "conflict": check["main_conflict"], "wants to know": check["viewer_wants_to_know"]})
 
-    # Find the run's pack: the one chosen in the sidebar, or a file of the same name in PROMO_PACK_DIR.
+    # The clip's cues: from the run's bundled excerpts, else from its pack (the one chosen in the sidebar, or a file of the
+    # same name in PROMO_PACK_DIR). Nothing is generated and no model is called.
+    excerpts_path = run_to_show / EXCERPTS_FILE
+    excerpt = None
+    if excerpts_path.is_file():
+        excerpt = load_excerpts(str(excerpts_path), excerpts_path.stat().st_mtime, run_to_show.name).get(selected["clip_key"])
     input_name = Path(summary.get("input_file") or "").name
     pack_path = source_path if source_path is not None and source_path.name == input_name else None
     if pack_path is None and PACK_DIR and input_name and (Path(PACK_DIR) / input_name).is_file():
         pack_path = Path(PACK_DIR) / input_name
-    with st.expander("See the screenplay for this clip", expanded=blind):
-        if pack_path is None and run_to_show.parent == DEMO_ROOT:
+    with st.expander("See the screenplay for this clip", expanded=False):
+        if excerpt is not None:
+            st.caption(f"Episode {segment['episode']}, {segment['start_timestamp']} to {segment['end_timestamp']}: every cue in this "
+                       "clip, copied unchanged from the original screenplay. The rest of the screenplay is not published with the app.")
+            # A plain table wraps every line in full, so the whole clip can be read without widening columns.
+            st.table(transcript_table([cue for part in excerpt["segments"] for cue in part["cues"]]))
+        elif pack_path is None and run_to_show.parent == DEMO_ROOT:
             st.caption("The screenplay for this run is not published with the app, so its full transcript cannot be shown. "
                        "The opening and final lines above come from the run's own results.")
         elif pack_path is None:
@@ -392,13 +423,7 @@ if promos:
         else:
             try:
                 episode = cached_pack(str(pack_path), pack_path.stat().st_mtime)[segment["episode"]]
-                rows = [{
-                    "Cue": cue.cue_id, "Start": format_timestamp(cue.start), "End": format_timestamp(cue.end),
-                    "Type": KIND_ICON.get(cue.kind, cue.kind.title()), "Speaker": cue.speaker or "",
-                    "Delivery": cue.delivery or "", "Text": cue.text,
-                } for cue in cues_in_range(episode, segment["start_seconds"], segment["end_seconds"])]
-                # A plain table wraps every line in full, so the whole clip can be read without widening columns.
-                st.table(pd.DataFrame(rows).set_index("Cue"))
+                st.table(transcript_table([vars(cue) for cue in cues_in_range(episode, segment["start_seconds"], segment["end_seconds"])]))
             except (ScreenplayPackError, KeyError):
                 st.caption("Could not open the pack for this run.")
 

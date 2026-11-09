@@ -81,7 +81,11 @@ Then open http://localhost:8501. On Windows: `.venv\Scripts\python.exe -m stream
 
 The app opens on the **final AI run on all 50 episodes** (33 promos), bundled in `demo_runs/`. "Earlier runs" also offers the initial AI trial (Episode 1 only) and a Basic mode run on the invented sample show, then any runs saved on the computer running the app. `demo_runs/catalog.json` sets their labels, order and which one opens first.
 
-Each bundled AI run holds only the files the interface reads, copied unchanged from the original run: `promos.json`, `processing_summary.json`, `promos.csv`, `report.md`, the blank review sheet, and the evaluations of the recommended clips. Model replies, logs, usage records, per-episode files, rejected candidates and the screenplay itself are left out, so the full transcript is only available for the sample show run. No run on a subset such as Episodes 10 to 20 exists, so none is shown.
+Each bundled AI run holds only the files the interface reads, copied unchanged from the original run: `promos.json`, `processing_summary.json`, `promos.csv`, `report.md`, the blank review sheet, and the evaluations of the recommended clips. Model replies, logs, usage records, per-episode files, rejected candidates and the screenplay pack itself are left out. No run on a subset such as Episodes 10 to 20 exists, so none is shown.
+
+Each bundled run also holds `transcripts.json`: for every recommended clip, the screenplay cues that play inside that clip (times, speaker, delivery note, dialogue, action and camera lines), copied unchanged from the parsed screenplay and keyed by the run and the clip's `clip_key`. "See the screenplay for this clip" shows them. Nothing outside the clips is copied. Rebuild them with `python tools/build_transcript_excerpts.py --pack PACK.zip --run demo_runs/RUN_FOLDER`; no model is called.
+
+The sidebar has three parts: **Existing runs** (open a saved run; this only reads its results), **Human review** (reviewer name and blind mode, for the run that is open) and, folded away, **Run on a new screenplay pack** (upload or sample show, mode, Find promos).
 
 Optional settings, set in the shell before starting:
 
@@ -93,7 +97,7 @@ Optional settings, set in the shell before starting:
 | `PROMO_BLIND_REVIEW_DEFAULT` | `1` starts with blind review mode on |
 | `PROMO_REVIEW_SET` | A JSON file with `run_id` and `clip_keys`. For that run, the clip list is limited to those clips (a checkbox turns this off), with Previous and Next buttons and a progress count |
 
-AI assisted mode in the interface has an "Episodes to process" box (for example `1-3`). Empty means every episode. If `AI_ACCESS_PASSWORD` is set, it also asks for that password and allows at most `AI_MAX_EPISODES` episodes per run (default 3).
+AI assisted mode in the interface has an "Episodes to process" box (for example `1-3`). Empty means every episode. When the key comes from a host's secrets, each run may process at most `AI_MAX_EPISODES` episodes (default 3). Choosing AI assisted mode starts nothing; models are called only when Find promos is clicked.
 
 ## Deploy on Streamlit Community Cloud
 
@@ -108,7 +112,7 @@ The app runs on Streamlit Community Cloud (free) from this repository, with `app
 How the hosted app behaves:
 
 - **Basic mode, the demo, transcripts and human review** need no key.
-- **AI assisted mode** needs the access password from the secrets. Without a password in the secrets it stays off, so nobody with the link can spend the model quota. Each run is limited to `AI_MAX_EPISODES` episodes.
+- **AI assisted mode** is open to anyone with the link, with no password. Every AI run spends the owner's Groq free-tier quota, so strangers can use it up; when the quota or rate limit is reached, runs stop early and keep their progress. Each run is limited to `AI_MAX_EPISODES` episodes. To close AI mode, remove the key from the secrets.
 - **Storage is temporary.** Runs and reviews saved on the hosted app are wiped when it restarts, when it sleeps (after 12 hours without visitors) and on every redeploy, because Community Cloud restarts from a fresh copy of the repository. Download reviews with the export buttons to keep them.
 - **Storage is shared.** Everyone using the hosted app sees the same saved runs and reviews. With blind review mode off, the comparison table shows every reviewer's ratings and comments, and runs other visitors made appear under "Earlier runs".
 - **Uploads go to the host.** A ZIP uploaded to the hosted app is sent to Streamlit's servers, and in AI assisted mode to the model provider. Do not upload confidential scripts to a public app.

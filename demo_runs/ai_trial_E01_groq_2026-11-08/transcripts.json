@@ -1,0 +1,662 @@
+{
+ "schema_version": 1,
+ "run_id": "ai_trial_E01_groq_2026-11-08",
+ "input_file": "I Married a Broken Soldier. He was a Duke-scripts (2) (1).zip",
+ "note": "Screenplay cues inside each recommended clip only, copied unchanged from the parsed screenplay.",
+ "clips": {
+  "E01_C0027__C0052": {
+   "promo_id": "P0001",
+   "segments": [
+    {
+     "episode": 1,
+     "start_seconds": 39.0,
+     "end_seconds": 79.0,
+     "cues": [
+      {
+       "cue_id": "E01_C0026",
+       "start": 39.0,
+       "end": 41.5,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on the Lady in Gold Gown beaming with cruel triumph."
+      },
+      {
+       "cue_id": "E01_C0027",
+       "start": 39.1,
+       "end": 41.2,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Gloating, Smug",
+       "text": "Because he is marrying me."
+      },
+      {
+       "cue_id": "E01_C0028",
+       "start": 41.5,
+       "end": 43.9,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana as tears spill over her eyelashes."
+      },
+      {
+       "cue_id": "E01_C0029",
+       "start": 41.7,
+       "end": 43.1,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Gasping, Devastated",
+       "text": "No..."
+      },
+      {
+       "cue_id": "E01_C0030",
+       "start": 43.9,
+       "end": 46.8,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Wide profile shot showing Juliana standing below the altar platform, looking up at Gerald and her sister."
+      },
+      {
+       "cue_id": "E01_C0031",
+       "start": 46.8,
+       "end": 50.4,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana clutching her chest, her sorrow turning into burning outrage."
+      },
+      {
+       "cue_id": "E01_C0032",
+       "start": 46.8,
+       "end": 50.0,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Outraged, Accusing",
+       "text": "You knew this before I walked through those doors!"
+      },
+      {
+       "cue_id": "E01_C0033",
+       "start": 50.4,
+       "end": 52.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium shot of Gerald standing stoic and impassive next to the smug Lady in Gold Gown."
+      },
+      {
+       "cue_id": "E01_C0034",
+       "start": 52.0,
+       "end": 54.6,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana's hands desperately clenching fistfuls of her white dress fabric."
+      },
+      {
+       "cue_id": "E01_C0035",
+       "start": 52.8,
+       "end": 54.6,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Choking on Tears",
+       "text": "You let me come here..."
+      },
+      {
+       "cue_id": "E01_C0036",
+       "start": 54.6,
+       "end": 57.6,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana's tear-streaked face as she shakes with grief."
+      },
+      {
+       "cue_id": "E01_C0037",
+       "start": 54.7,
+       "end": 56.9,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Crushed, Shaking",
+       "text": "You let me dress in my mother's gown..."
+      },
+      {
+       "cue_id": "E01_C0038",
+       "start": 57.0,
+       "end": 60.0,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Crying Out",
+       "text": "You let me believe I was walking toward my husband!"
+      },
+      {
+       "cue_id": "E01_C0039",
+       "start": 57.6,
+       "end": 60.1,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium shot on Gerald stepping forward, cold and indifferent, with the Lady in Gold Gown lingering in soft focus behind him."
+      },
+      {
+       "cue_id": "E01_C0040",
+       "start": 60.1,
+       "end": 63.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Tight close-up on Gerald's hardened profile as he glances down."
+      },
+      {
+       "cue_id": "E01_C0041",
+       "start": 60.1,
+       "end": 61.8,
+       "kind": "dialogue",
+       "speaker": "THE FORMER GROOM",
+       "delivery": "Cold, Callous",
+       "text": "I changed my mind."
+      },
+      {
+       "cue_id": "E01_C0042",
+       "start": 63.0,
+       "end": 66.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Extreme close-up on Juliana's furious, weeping face."
+      },
+      {
+       "cue_id": "E01_C0043",
+       "start": 63.4,
+       "end": 65.6,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Betrayed, Piercing",
+       "text": "You swore you loved me!"
+      },
+      {
+       "cue_id": "E01_C0044",
+       "start": 66.0,
+       "end": 68.8,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on the Lady in Gold Gown smiling condescendingly."
+      },
+      {
+       "cue_id": "E01_C0045",
+       "start": 66.5,
+       "end": 68.8,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Mocking",
+       "text": "People change their minds, sister."
+      },
+      {
+       "cue_id": "E01_C0046",
+       "start": 68.8,
+       "end": 72.4,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium profile shot of the Lady in Gold Gown turning her head subtly toward Gerald with satisfied malice."
+      },
+      {
+       "cue_id": "E01_C0047",
+       "start": 69.1,
+       "end": 70.4,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Horrified",
+       "text": "And you knew?"
+      },
+      {
+       "cue_id": "E01_C0048",
+       "start": 70.6,
+       "end": 72.1,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Unapologetic, Cheerful",
+       "text": "Of course I knew."
+      },
+      {
+       "cue_id": "E01_C0049",
+       "start": 72.4,
+       "end": 74.6,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana, stunned by the callous depth of the conspiracy."
+      },
+      {
+       "cue_id": "E01_C0050",
+       "start": 73.1,
+       "end": 74.3,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Trembling",
+       "text": "How long?"
+      },
+      {
+       "cue_id": "E01_C0051",
+       "start": 74.6,
+       "end": 79.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium two-shot of the Lady in Gold Gown and Gerald looking together down at Juliana."
+      },
+      {
+       "cue_id": "E01_C0052",
+       "start": 75.0,
+       "end": 78.5,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Cruel, Poised",
+       "text": "Long enough to know he was never going to marry you."
+      }
+     ]
+    }
+   ]
+  },
+  "E01_C0041__C0082": {
+   "promo_id": "P0002",
+   "segments": [
+    {
+     "episode": 1,
+     "start_seconds": 60.1,
+     "end_seconds": 119.5,
+     "cues": [
+      {
+       "cue_id": "E01_C0040",
+       "start": 60.1,
+       "end": 63.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Tight close-up on Gerald's hardened profile as he glances down."
+      },
+      {
+       "cue_id": "E01_C0041",
+       "start": 60.1,
+       "end": 61.8,
+       "kind": "dialogue",
+       "speaker": "THE FORMER GROOM",
+       "delivery": "Cold, Callous",
+       "text": "I changed my mind."
+      },
+      {
+       "cue_id": "E01_C0042",
+       "start": 63.0,
+       "end": 66.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Extreme close-up on Juliana's furious, weeping face."
+      },
+      {
+       "cue_id": "E01_C0043",
+       "start": 63.4,
+       "end": 65.6,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Betrayed, Piercing",
+       "text": "You swore you loved me!"
+      },
+      {
+       "cue_id": "E01_C0044",
+       "start": 66.0,
+       "end": 68.8,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on the Lady in Gold Gown smiling condescendingly."
+      },
+      {
+       "cue_id": "E01_C0045",
+       "start": 66.5,
+       "end": 68.8,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Mocking",
+       "text": "People change their minds, sister."
+      },
+      {
+       "cue_id": "E01_C0046",
+       "start": 68.8,
+       "end": 72.4,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium profile shot of the Lady in Gold Gown turning her head subtly toward Gerald with satisfied malice."
+      },
+      {
+       "cue_id": "E01_C0047",
+       "start": 69.1,
+       "end": 70.4,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Horrified",
+       "text": "And you knew?"
+      },
+      {
+       "cue_id": "E01_C0048",
+       "start": 70.6,
+       "end": 72.1,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Unapologetic, Cheerful",
+       "text": "Of course I knew."
+      },
+      {
+       "cue_id": "E01_C0049",
+       "start": 72.4,
+       "end": 74.6,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana, stunned by the callous depth of the conspiracy."
+      },
+      {
+       "cue_id": "E01_C0050",
+       "start": 73.1,
+       "end": 74.3,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Trembling",
+       "text": "How long?"
+      },
+      {
+       "cue_id": "E01_C0051",
+       "start": 74.6,
+       "end": 79.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium two-shot of the Lady in Gold Gown and Gerald looking together down at Juliana."
+      },
+      {
+       "cue_id": "E01_C0052",
+       "start": 75.0,
+       "end": 78.5,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Cruel, Poised",
+       "text": "Long enough to know he was never going to marry you."
+      },
+      {
+       "cue_id": "E01_C0053",
+       "start": 79.0,
+       "end": 81.0,
+       "kind": "action",
+       "speaker": null,
+       "delivery": null,
+       "text": "Juliana turns abruptly toward the first row of pews, where her elderly father sits gripping an ornate brass cane."
+      },
+      {
+       "cue_id": "E01_C0054",
+       "start": 79.0,
+       "end": 81.4,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on the father's hand tightly gripping the gold curved handle of his walking cane."
+      },
+      {
+       "cue_id": "E01_C0055",
+       "start": 80.1,
+       "end": 81.2,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Desperate",
+       "text": "Father..."
+      },
+      {
+       "cue_id": "E01_C0056",
+       "start": 81.4,
+       "end": 83.7,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Wide shot showing Juliana dropping to her knees beside her seated father, pleading with him."
+      },
+      {
+       "cue_id": "E01_C0057",
+       "start": 81.4,
+       "end": 83.6,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Begging",
+       "text": "Tell them this is a mistake."
+      },
+      {
+       "cue_id": "E01_C0058",
+       "start": 83.7,
+       "end": 86.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on the father's weathered face, looking fixedly at the floor, refusing to meet her gaze."
+      },
+      {
+       "cue_id": "E01_C0059",
+       "start": 86.0,
+       "end": 89.5,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana looking up at him, tears streaming uncontrollably down her cheeks."
+      },
+      {
+       "cue_id": "E01_C0060",
+       "start": 86.0,
+       "end": 88.9,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Choking, Broken",
+       "text": "Father... please look at me."
+      },
+      {
+       "cue_id": "E01_C0061",
+       "start": 89.5,
+       "end": 90.8,
+       "kind": "action",
+       "speaker": null,
+       "delivery": null,
+       "text": "The father tightens his jaw and stony expression, refusing to offer a single word or look."
+      },
+      {
+       "cue_id": "E01_C0062",
+       "start": 89.5,
+       "end": 90.8,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Profile close-up of the father staring blankly forward."
+      },
+      {
+       "cue_id": "E01_C0063",
+       "start": 90.8,
+       "end": 95.8,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Low-angle shot looking up at the Matriarch commanding the space with regal severity."
+      },
+      {
+       "cue_id": "E01_C0064",
+       "start": 90.9,
+       "end": 91.9,
+       "kind": "dialogue",
+       "speaker": "MATRIARCH",
+       "delivery": "Stern, Resolute",
+       "text": "Enough!"
+      },
+      {
+       "cue_id": "E01_C0065",
+       "start": 92.1,
+       "end": 95.5,
+       "kind": "dialogue",
+       "speaker": "MATRIARCH",
+       "delivery": "Disgusted",
+       "text": "You have embarrassed this family long enough."
+      },
+      {
+       "cue_id": "E01_C0066",
+       "start": 95.8,
+       "end": 98.6,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana as she rises, stung by the utter betrayal."
+      },
+      {
+       "cue_id": "E01_C0067",
+       "start": 96.2,
+       "end": 98.2,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Incredulous",
+       "text": "Embarrassed you?"
+      },
+      {
+       "cue_id": "E01_C0068",
+       "start": 98.6,
+       "end": 102.5,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium shot of the Matriarch gesturing toward Clarissa, who stands elegantly in gold."
+      },
+      {
+       "cue_id": "E01_C0069",
+       "start": 98.8,
+       "end": 101.5,
+       "kind": "dialogue",
+       "speaker": "MATRIARCH",
+       "delivery": "Haughty",
+       "text": "Clarissa knows how to carry herself."
+      },
+      {
+       "cue_id": "E01_C0070",
+       "start": 101.6,
+       "end": 105.0,
+       "kind": "dialogue",
+       "speaker": "MATRIARCH",
+       "delivery": "Proud",
+       "text": "She has beauty, connections, and a future worth protecting."
+      },
+      {
+       "cue_id": "E01_C0071",
+       "start": 102.5,
+       "end": 105.3,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium profile two-shot of the Matriarch confronting Juliana face to face."
+      },
+      {
+       "cue_id": "E01_C0072",
+       "start": 105.3,
+       "end": 107.4,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana, demanding answers in spite of her humiliation."
+      },
+      {
+       "cue_id": "E01_C0073",
+       "start": 105.4,
+       "end": 107.3,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Raw, Painful",
+       "text": "And I am what?"
+      },
+      {
+       "cue_id": "E01_C0074",
+       "start": 107.4,
+       "end": 110.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium tracking shot showing the Lady in Gold Gown stepping past Juliana toward the center."
+      },
+      {
+       "cue_id": "E01_C0075",
+       "start": 107.5,
+       "end": 110.8,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Viciously Calm",
+       "text": "You are the daughter people tolerate because they have to."
+      },
+      {
+       "cue_id": "E01_C0076",
+       "start": 110.0,
+       "end": 113.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Juliana absorbing the venomous words, her breathing shallow."
+      },
+      {
+       "cue_id": "E01_C0077",
+       "start": 111.1,
+       "end": 113.0,
+       "kind": "dialogue",
+       "speaker": "LADY IN GOLD GOWN",
+       "delivery": "Gloating",
+       "text": "I am the daughter they choose."
+      },
+      {
+       "cue_id": "E01_C0078",
+       "start": 113.0,
+       "end": 115.2,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium shot of the Lady in Gold Gown smiling warmly at Gerald beside the altar candles."
+      },
+      {
+       "cue_id": "E01_C0079",
+       "start": 113.3,
+       "end": 115.7,
+       "kind": "dialogue",
+       "speaker": "MATRIARCH",
+       "delivery": "Firm",
+       "text": "Clarissa is the jewel of this family."
+      },
+      {
+       "cue_id": "E01_C0080",
+       "start": 115.2,
+       "end": 117.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close two-shot of the Matriarch and Juliana standing side by side in profile."
+      },
+      {
+       "cue_id": "E01_C0081",
+       "start": 117.0,
+       "end": 119.5,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium shot framing Juliana looking directly at Gerald, who towers over her coldly."
+      },
+      {
+       "cue_id": "E01_C0082",
+       "start": 117.0,
+       "end": 119.0,
+       "kind": "dialogue",
+       "speaker": "LADY JULIANA",
+       "delivery": "Trembling, Dignified",
+       "text": "So that is what I was worth to you?"
+      }
+     ]
+    }
+   ]
+  }
+ }
+}

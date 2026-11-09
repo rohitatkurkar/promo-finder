@@ -1,4 +1,4 @@
-"""Hosted settings: .env plus Streamlit secrets, the AI access password, and the episode limit."""
+"""Hosted settings: .env plus Streamlit secrets, and the episode limit."""
 
 import json
 
@@ -7,7 +7,6 @@ from conftest import FakeProvider
 
 from promo_finder.hosting import (
     DEFAULT_MAX_EPISODES,
-    ai_access,
     has_api_key,
     max_episodes,
     merge_settings,
@@ -29,25 +28,6 @@ def test_api_key_detection():
     assert has_api_key({"FINDER_API_KEY": "a", "EVALUATOR_API_KEY": "b"})
     assert not has_api_key({"FINDER_API_KEY": "a"})
     assert not has_api_key({})
-
-
-def test_password_is_required_when_set():
-    settings = {"LLM_API_KEY": "k", "AI_ACCESS_PASSWORD": "open sesame"}
-    assert ai_access(settings, True, "open sesame").allowed
-    for attempt in ("", "Open sesame", "open sesame ", "wrong"):
-        decision = ai_access(settings, True, attempt)
-        assert not decision.allowed and decision.needs_password
-    assert "Incorrect" in ai_access(settings, True, "wrong").message
-
-
-def test_hosted_key_without_a_password_keeps_ai_mode_off():
-    decision = ai_access({"LLM_API_KEY": "k"}, key_from_secrets=True, entered_password="")
-    assert not decision.allowed and "no access password" in decision.message
-
-
-def test_local_env_without_a_password_works_as_before():
-    decision = ai_access({"LLM_API_KEY": "k"}, key_from_secrets=False, entered_password="")
-    assert decision.allowed and not decision.needs_password
 
 
 @pytest.mark.parametrize("value, expected", [(None, DEFAULT_MAX_EPISODES), ("5", 5), ("0", 1), ("lots", DEFAULT_MAX_EPISODES)])

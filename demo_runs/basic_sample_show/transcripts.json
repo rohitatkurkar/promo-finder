@@ -1,0 +1,341 @@
+{
+ "schema_version": 1,
+ "run_id": "basic_sample_show",
+ "input_file": "synthetic_show.zip",
+ "note": "Screenplay cues inside each recommended clip only, copied unchanged from the parsed screenplay.",
+ "clips": {
+  "E01_C0014__C0025": {
+   "promo_id": "B0001",
+   "segments": [
+    {
+     "episode": 1,
+     "start_seconds": 24.5,
+     "end_seconds": 51.0,
+     "cues": [
+      {
+       "cue_id": "E01_C0014",
+       "start": 24.5,
+       "end": 27.5,
+       "kind": "dialogue",
+       "speaker": "PROSECUTOR",
+       "delivery": "Menacing",
+       "text": "I want the truth, and I have a witness who saw you."
+      },
+      {
+       "cue_id": "E01_C0015",
+       "start": 27.5,
+       "end": 30.0,
+       "kind": "action",
+       "speaker": null,
+       "delivery": null,
+       "text": "The courtroom doors slam open and a soaked woman staggers inside."
+      },
+      {
+       "cue_id": "E01_C0016",
+       "start": 27.5,
+       "end": 30.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Low angle on the doors crashing open."
+      },
+      {
+       "cue_id": "E01_C0017",
+       "start": 30.5,
+       "end": 33.0,
+       "kind": "dialogue",
+       "speaker": "WITNESS",
+       "delivery": "Gasping",
+       "text": "Stop this trial. Her brother is not dead."
+      },
+      {
+       "cue_id": "E01_C0018",
+       "start": 33.0,
+       "end": 36.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Mara, frozen."
+      },
+      {
+       "cue_id": "E01_C0019",
+       "start": 33.5,
+       "end": 35.5,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Whispering",
+       "text": "What did you say?"
+      },
+      {
+       "cue_id": "E01_C0020",
+       "start": 36.0,
+       "end": 39.0,
+       "kind": "dialogue",
+       "speaker": "WITNESS",
+       "delivery": "Urgent",
+       "text": "He paid me to put out the lamps."
+      },
+      {
+       "cue_id": "E01_C0021",
+       "start": 39.5,
+       "end": 42.0,
+       "kind": "dialogue",
+       "speaker": "JUDGE",
+       "delivery": "Booming",
+       "text": "Who paid you? Say his name!"
+      },
+      {
+       "cue_id": "E01_C0022",
+       "start": 42.5,
+       "end": 45.0,
+       "kind": "dialogue",
+       "speaker": "WITNESS",
+       "delivery": "Terrified",
+       "text": "If I say it, he will kill us both."
+      },
+      {
+       "cue_id": "E01_C0023",
+       "start": 45.0,
+       "end": 48.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Slow push in on the witness as she lifts a shaking hand."
+      },
+      {
+       "cue_id": "E01_C0024",
+       "start": 45.5,
+       "end": 48.0,
+       "kind": "action",
+       "speaker": null,
+       "delivery": null,
+       "text": "The witness lifts a shaking hand and points toward the front row."
+      },
+      {
+       "cue_id": "E01_C0025",
+       "start": 48.5,
+       "end": 51.0,
+       "kind": "dialogue",
+       "speaker": "WITNESS",
+       "delivery": "Breathless",
+       "text": "He is sitting right there."
+      }
+     ]
+    }
+   ]
+  },
+  "E03_C0005__C0013": {
+   "promo_id": "B0002",
+   "segments": [
+    {
+     "episode": 3,
+     "start_seconds": 9.5,
+     "end_seconds": 39.0,
+     "cues": [
+      {
+       "cue_id": "E03_C0005",
+       "start": 9.5,
+       "end": 12.5,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Accusing",
+       "text": "You knew he was alive, and you let me bury him!"
+      },
+      {
+       "cue_id": "E03_C0006",
+       "start": 13.0,
+       "end": 16.0,
+       "kind": "dialogue",
+       "speaker": "AUNT ISOLDE",
+       "delivery": "Cold",
+       "text": "I knew what he stole. Everyone in this family did."
+      },
+      {
+       "cue_id": "E03_C0007",
+       "start": 16.5,
+       "end": 19.0,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Outraged",
+       "text": "You all lied to me for three years?"
+      },
+      {
+       "cue_id": "E03_C0008",
+       "start": 19.5,
+       "end": 22.5,
+       "kind": "dialogue",
+       "speaker": "AUNT ISOLDE",
+       "delivery": "Calm, Cutting",
+       "text": "We lied so you could keep your name clean..."
+      },
+      {
+       "cue_id": "E03_C0009",
+       "start": 22.5,
+       "end": 25.0,
+       "kind": "dialogue",
+       "speaker": "AUNT ISOLDE",
+       "delivery": "Cold",
+       "text": "...and so he could keep breathing."
+      },
+      {
+       "cue_id": "E03_C0010",
+       "start": 25.5,
+       "end": 28.0,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Defiant",
+       "text": "Then tell me what is in that room."
+      },
+      {
+       "cue_id": "E03_C0011",
+       "start": 28.5,
+       "end": 31.5,
+       "kind": "dialogue",
+       "speaker": "AUNT ISOLDE",
+       "delivery": "Venomous",
+       "text": "Open it, and you will hang beside your brother."
+      },
+      {
+       "cue_id": "E03_C0012",
+       "start": 31.5,
+       "end": 36.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Mara's hand closing around the key."
+      },
+      {
+       "cue_id": "E03_C0013",
+       "start": 36.5,
+       "end": 39.0,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Resolute",
+       "text": "Then I will see you at the gallows, Aunt."
+      }
+     ]
+    }
+   ]
+  },
+  "E01_C0003__C0014": {
+   "promo_id": "B0003",
+   "segments": [
+    {
+     "episode": 1,
+     "start_seconds": 2.0,
+     "end_seconds": 27.5,
+     "cues": [
+      {
+       "cue_id": "E01_C0003",
+       "start": 2.0,
+       "end": 4.5,
+       "kind": "dialogue",
+       "speaker": "PROSECUTOR",
+       "delivery": "Cold, Accusing",
+       "text": "You sank that ship and let your own brother drown!"
+      },
+      {
+       "cue_id": "E01_C0004",
+       "start": 4.5,
+       "end": 7.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on Mara's shocked face."
+      },
+      {
+       "cue_id": "E01_C0005",
+       "start": 5.0,
+       "end": 6.5,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Stunned",
+       "text": "That is a lie."
+      },
+      {
+       "cue_id": "E01_C0006",
+       "start": 7.0,
+       "end": 10.0,
+       "kind": "dialogue",
+       "speaker": "PROSECUTOR",
+       "delivery": "Scornful",
+       "text": "Your brother trusted you with the harbour lights."
+      },
+      {
+       "cue_id": "E01_C0007",
+       "start": 10.5,
+       "end": 13.0,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Desperate",
+       "text": "I lit every lamp that night. I swear it."
+      },
+      {
+       "cue_id": "E01_C0008",
+       "start": 13.0,
+       "end": 16.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Medium shot of the judge leaning forward."
+      },
+      {
+       "cue_id": "E01_C0009",
+       "start": 13.5,
+       "end": 16.0,
+       "kind": "dialogue",
+       "speaker": "JUDGE",
+       "delivery": "Stern",
+       "text": "Then who put out the lamps, Miss Vale?"
+      },
+      {
+       "cue_id": "E01_C0010",
+       "start": 16.5,
+       "end": 18.5,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Trembling",
+       "text": "I do not know."
+      },
+      {
+       "cue_id": "E01_C0011",
+       "start": 18.5,
+       "end": 21.0,
+       "kind": "camera",
+       "speaker": null,
+       "delivery": null,
+       "text": "Close-up on an old sailor in the crowd."
+      },
+      {
+       "cue_id": "E01_C0012",
+       "start": 19.0,
+       "end": 21.0,
+       "kind": "dialogue",
+       "speaker": "OLD SAILOR",
+       "delivery": "Shouting",
+       "text": "She is lying to save her own neck!"
+      },
+      {
+       "cue_id": "E01_C0013",
+       "start": 21.5,
+       "end": 24.0,
+       "kind": "dialogue",
+       "speaker": "MARA",
+       "delivery": "Furious",
+       "text": "My brother is dead, and you want me to hang for it?"
+      },
+      {
+       "cue_id": "E01_C0014",
+       "start": 24.5,
+       "end": 27.5,
+       "kind": "dialogue",
+       "speaker": "PROSECUTOR",
+       "delivery": "Menacing",
+       "text": "I want the truth, and I have a witness who saw you."
+      }
+     ]
+    }
+   ]
+  }
+ }
+}
