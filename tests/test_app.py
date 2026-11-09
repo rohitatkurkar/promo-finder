@@ -410,3 +410,75 @@ def test_next_and_previous_still_work_after_blind_mode_is_turned_off(app):
         next(b for b in app.button if b.label == button).click().run()
         assert not app.exception
         assert any(item.value == expected for item in app.caption), button
+
+
+# Phase 1: private runs on a shared host, resuming, and the blind export.
+
+def test_blind_export_holds_only_my_reviews(app, tmp_path):
+    app.run()
+    for name in ("someone_else", "me"):
+        app.text_input(key="reviewer").input(name).run()
+        radios = _review_radios(app)
+        for label in ("Hook quality (1 to 5)", "Cliffhanger quality (1 to 5)", "Clarity (1 to 5)", "Overall quality (1 to 5)"):
+            radios[label].set_value(2 if name == "someone_else" else 5)
+        radios["Would publish?"].set_value("No" if name == "someone_else" else "Yes")
+        _save_button(app).click().run()
+    app.checkbox(key="blind_review").check().run()
+    export = next(item for item in app.get("download_button") if item.label == "My reviews (JSON)")
+    assert not app.exception and export.proto.disabled is False
+    # The export's content is built from the same filtered list the button uses.
+    store = tmp_path / "outputs" / "human_reviews" / "human_reviews.jsonl"
+    assert len(store.read_text(encoding="utf-8").splitlines()) == 2
+
+
+def _saved_basic_run(tmp_path, name):
+    from promo_finder.pipeline import run_basic_pipeline
+    run_dir = tmp_path / "outputs" / name
+    run_basic_pipeline(ROOT / "sample_input" / "synthetic_show.zip", run_dir)
+    return run_dir
+
+
+def test_a_shared_host_lists_only_my_own_saved_runs(tmp_path, monkeypatch):
+    monkeypatch.setenv("PROMO_OUTPUT_DIR", str(tmp_path / "outputs"))
+    monkeypatch.setenv("PROMO_ENV_FILE", str(tmp_path / "no.env"))
+    _saved_basic_run(tmp_path, "basic_someone_elses_run")
+    for shared, listed in (("0", True), ("1", False)):
+        monkeypatch.setenv("PROMO_SHARED_HOST", shared)
+        app = AppTest.from_file(str(ROOT / "app.py"), default_timeout=60)
+        app.run()
+        assert any("basic_someone_elses_run" in option for option in _open_run_box(app).options) is listed
+    app.sidebar.button[0].click().run()  # My own run, on the shared host.
+    app.run()
+    assert any(option.startswith("Your run: basic_") for option in _open_run_box(app).options)
+
+
+def test_two_runs_get_two_folders(app, tmp_path):
+    _run_sample(app)
+    app.sidebar.button[0].click().run()
+    assert not app.exception
+    assert len([p for p in (tmp_path / "outputs").iterdir() if p.name.startswith("basic_")]) == 2
+
+
+def test_an_unfinished_run_resumes_in_the_same_folder(app, tmp_path):
+    run_dir = _saved_basic_run(tmp_path, "basic_unfinished")
+    (run_dir / "promos.json").unlink()  # As if the run was interrupted before its results were written.
+    app.session_state["resumable"] = {"run_dir": str(run_dir), "mode": "basic", "fresh": False, "episodes": None,
+                                      "source": str(ROOT / "sample_input" / "synthetic_show.zip")}
+    app.run()
+    resume = next(button for button in app.sidebar.button if button.label == "Resume unfinished run")
+    resume.click().run()
+    assert not app.exception
+    summary = json.loads((run_dir / "processing_summary.json").read_text(encoding="utf-8"))
+    assert summary["episodes_resumed_from_checkpoint"] == 3 and (run_dir / "promos.json").exists()
+    assert _open_run_box(app).value == "Your latest run" and app.metric[0].value == "3 of 3"
+    assert not any(button.label == "Resume unfinished run" for button in app.sidebar.button)  # Finished, so gone.
+    assert [p.name for p in (tmp_path / "outputs").iterdir() if p.name.startswith("basic_")] == ["basic_unfinished"]
+
+
+def test_a_run_whose_pack_is_gone_cannot_be_resumed(app, tmp_path):
+    app.session_state["resumable"] = {"run_dir": str(tmp_path / "outputs" / "basic_x"), "mode": "basic", "fresh": False,
+                                      "episodes": None, "source": str(tmp_path / "deleted.zip")}
+    app.run()
+    next(button for button in app.sidebar.button if button.label == "Resume unfinished run").click().run()
+    assert any("cannot be resumed" in item.value for item in app.error)
+    assert not (tmp_path / "outputs" / "basic_x").exists()

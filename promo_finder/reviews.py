@@ -146,6 +146,12 @@ def latest_reviews(records: list[HumanReviewRecord], run_id: str | None = None) 
     return latest
 
 
+def reviews_of(latest: dict[tuple[str, str, str], HumanReviewRecord], reviewer: str) -> list[HumanReviewRecord]:
+    """One reviewer's current reviews. An empty name has none."""
+    key = _reviewer_key(reviewer)
+    return [record for (_, _, who), record in latest.items() if key and who == key]
+
+
 def step_clip(options: list[str], shown: str | None, delta: int) -> str:
     """The clip label `delta` places from the one shown, wrapping around. Starts from the first if `shown` is not listed."""
     position = options.index(shown) if shown in options else 0

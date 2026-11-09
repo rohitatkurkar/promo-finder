@@ -188,3 +188,15 @@ def test_next_and_previous_move_from_the_clip_shown_even_if_the_selectbox_value_
     stale = "Episode 2, 01:03.50 to 01:36.80"  # A blind-mode label, not in the current list.
     assert step_clip(options, stale, 1) == options[1]
     assert step_clip(options, None, -1) == options[2]
+
+
+def test_my_reviews_hold_no_one_elses(basic_run):
+    # The blind-mode "My reviews (JSON)" download is built from this: another reviewer's ratings must not be in it.
+    from promo_finder.reviews import reviews_of
+    run_dir, promos = basic_run
+    save(run_dir, promos[0], reviewer="itesh", hook_quality=5)
+    save(run_dir, promos[1], reviewer="editor_2", hook_quality=2)
+    latest = latest_reviews(load_reviews(review_store_path(run_dir.parent))[0], run_dir.name)
+    mine = reviews_of(latest, " Itesh ")
+    assert [record.reviewer for record in mine] == ["itesh"] and mine[0].clip_key == promos[0]["clip_key"]
+    assert reviews_of(latest, "") == [] and reviews_of(latest, "nobody") == []

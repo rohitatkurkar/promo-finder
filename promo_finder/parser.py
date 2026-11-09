@@ -444,6 +444,27 @@ def _check_cue_quality(episode: Episode) -> None:
             last_on_track[cue.kind] = cue
 
 
+# Far above a real pack (51 files, 0.5 MB, largest file 16 KB), low enough that a hostile ZIP cannot fill memory.
+MAX_ZIP_MEMBERS = 500
+MAX_MEMBER_BYTES = 2 * 1024 * 1024
+MAX_TOTAL_BYTES = 50 * 1024 * 1024
+
+
+def check_zip_limits(archive: zipfile.ZipFile) -> None:
+    """Refuse a ZIP with too many files or too much text once unpacked. Uses the sizes the ZIP declares, which
+    are also the most Python will unpack for each member."""
+    members = [info for info in archive.infolist() if not info.is_dir()]
+    if len(members) > MAX_ZIP_MEMBERS:
+        raise ScreenplayPackError(f"The ZIP holds {len(members)} files; at most {MAX_ZIP_MEMBERS} are accepted.")
+    largest = max(members, key=lambda info: info.file_size, default=None)
+    if largest is not None and largest.file_size > MAX_MEMBER_BYTES:
+        raise ScreenplayPackError(f"{largest.filename} is {largest.file_size:,} bytes unpacked; "
+                                  f"at most {MAX_MEMBER_BYTES:,} are accepted per file.")
+    total = sum(info.file_size for info in members)
+    if total > MAX_TOTAL_BYTES:
+        raise ScreenplayPackError(f"The ZIP unpacks to {total:,} bytes; at most {MAX_TOTAL_BYTES:,} are accepted.")
+
+
 def load_pack(path: str | Path) -> tuple[list[Episode], list[ParseIssue]]:
     """Load every episode from a ZIP file or a folder.
 
@@ -464,6 +485,7 @@ def load_pack(path: str | Path) -> tuple[list[Episode], list[ParseIssue]]:
     else:
         try:
             with zipfile.ZipFile(path) as archive:
+                check_zip_limits(archive)  # Before anything is decompressed.
                 bad_member = archive.testzip()
                 if bad_member:
                     raise ScreenplayPackError(f"ZIP is corrupted at member: {bad_member}")

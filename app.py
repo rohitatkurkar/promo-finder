@@ -6,7 +6,6 @@ import json
 import os
 import shutil
 import tempfile
-import time
 from pathlib import Path
 
 import pandas as pd
@@ -20,6 +19,7 @@ from promo_finder.hosting import has_api_key, max_episodes, merge_settings, pars
 from promo_finder.llm_client import LLMError
 from promo_finder.parser import ACTION, CAMERA, DIALOGUE, ScreenplayPackError, format_timestamp, load_pack
 from promo_finder.pipeline import DEFAULT_ENV, pack_title, run_ai_pipeline, run_basic_pipeline
+from promo_finder.uploads import new_run_dir, store_upload
 from promo_finder.reviews import (
     append_review,
     comparison_rows,
@@ -28,6 +28,7 @@ from promo_finder.reviews import (
     new_review,
     review_by,
     review_store_path,
+    reviews_of,
     rows_to_csv,
     rows_to_json,
     step_clip,
@@ -81,8 +82,23 @@ def demo_catalog() -> dict:
     return {"default": catalog.get("default"), "entries": entries, "order": [entry["folder"] for entry in catalog.get("runs", [])]}
 
 
-def existing_runs() -> list[tuple[str, Path]]:
-    """The bundled demo runs in catalog order, then runs saved on this computer, newest first. Returns (label, folder)."""
+def shared_host() -> bool:
+    """True on a hosted app, where every visitor shares one disk. Streamlit secrets mark it, as they exist only there;
+    PROMO_SHARED_HOST=1 or 0 overrides."""
+    override = os.environ.get("PROMO_SHARED_HOST", "").strip()
+    if override in ("0", "1"):
+        return override == "1"
+    try:
+        return len(st.secrets) > 0
+    except Exception:  # No secrets file: a computer of its own.
+        return False
+
+
+def existing_runs(only: set[str] | None = None) -> list[tuple[str, Path]]:
+    """The bundled demo runs in catalog order, then runs saved on this computer, newest first. Returns (label, folder).
+
+    With `only`, saved runs are limited to those folder names: on a shared host, a visitor sees only their own runs.
+    """
     found: list[tuple[str, Path]] = []
     if DEMO_ROOT.exists():
         catalog = demo_catalog()
@@ -91,8 +107,9 @@ def existing_runs() -> list[tuple[str, Path]]:
         for p in sorted(folders, key=lambda p: (rank.get(p.name, len(rank)), p.name)):
             found.append((catalog["entries"].get(p.name, {}).get("label") or f"{p.name} (demo)", p))
     if OUTPUT_ROOT.exists():
-        mine = sorted((p for p in OUTPUT_ROOT.iterdir() if (p / "promos.json").exists()), key=lambda p: p.stat().st_mtime, reverse=True)
-        found += [(f"Saved run: {p.name}", p) for p in mine]
+        mine = sorted((p for p in OUTPUT_ROOT.iterdir() if (p / "promos.json").exists() and (only is None or p.name in only)),
+                      key=lambda p: p.stat().st_mtime, reverse=True)
+        found += [(f"{'Your run' if only is not None else 'Saved run'}: {p.name}", p) for p in mine]
     return found
 
 
@@ -123,6 +140,10 @@ def start_new_run() -> None:
     st.session_state["run_requested"] = True
 
 
+def resume_run() -> None:
+    st.session_state["resume_requested"] = True
+
+
 def load_review_set(run_id: str) -> list[str] | None:
     """The clip_keys of the review set for this run, if PROMO_REVIEW_SET names one. Otherwise None."""
     if not REVIEW_SET_FILE or not Path(REVIEW_SET_FILE).is_file():
@@ -146,16 +167,20 @@ def story_order(promo: dict) -> tuple:
 
 # Set by the Find promos button's callback, which runs before the script, so the run list can offer the new run.
 run_clicked = st.session_state.pop("run_requested", False)
+resume_clicked = st.session_state.pop("resume_requested", False)
+# Run folders this browser session made. On a shared host only these are listed, so visitors never see each other's runs.
+my_runs: list[str] = st.session_state.setdefault("my_runs", [])
+SHARED_HOST = shared_host()
 
 with st.sidebar:
     # 1. Existing runs. Opening one only reads its saved results: nothing is processed and no model is called.
     st.header("Existing runs")
-    runs = existing_runs()
+    runs = existing_runs(set(my_runs) if SHARED_HOST else None)
     run_paths = dict(runs)
     run_options = [label for label, _ in runs]
-    if run_clicked or st.session_state.get("current_run"):
+    if run_clicked or resume_clicked or st.session_state.get("current_run"):
         run_options = [YOUR_LATEST_RUN] + run_options
-    if run_clicked:
+    if run_clicked or resume_clicked:
         st.session_state["open_run"] = YOUR_LATEST_RUN  # Show the run just made, not the default.
     default_folder = demo_catalog()["default"] if DEMO_ROOT.exists() else None
     default_label = next((label for label, path in runs if path.parent == DEMO_ROOT and path.name == default_folder), None)
@@ -203,12 +228,12 @@ with st.sidebar:
             )
             fresh = st.checkbox("Ask the models again instead of reusing saved answers")
         st.button("Find promos", type="primary", use_container_width=True, on_click=start_new_run)
+        resume_slot = st.container()  # Filled after any run below, so it reflects how that run ended.
 
 source_path = None
 if uploaded is not None and not use_sample:
-    holder = Path(tempfile.mkdtemp(prefix="promo_upload_"))
-    source_path = holder / uploaded.name
-    source_path.write_bytes(uploaded.getvalue())
+    # Saved once per content, in a folder that is cleaned up after a day, not once per page refresh.
+    source_path = store_upload(uploaded.getvalue(), uploaded.name, tempfile.gettempdir())
 elif use_sample and SAMPLE.exists():
     source_path = SAMPLE
 
@@ -230,40 +255,68 @@ if run_clicked and mode == "AI assisted" and source_path is not None:
                      f"free model quota. Choose episodes, for example 1-{limit}.")
             run_clicked = False
 
-if run_clicked:
+# A job is a new run, or the unfinished one being resumed. It is remembered until it completes, so a run that was
+# interrupted (a click elsewhere, a rate limit) can be resumed in the same folder.
+job = None
+if resume_clicked:
+    saved_job = st.session_state.get("resumable")
+    if saved_job and Path(saved_job["source"]).exists():
+        job = saved_job
+    else:
+        st.session_state.pop("resumable", None)
+        st.error("The unfinished run cannot be resumed: its screenplay pack is no longer on this computer. Start a new run.")
+elif run_clicked:
     if source_path is None:
         st.error("Please upload a screenplay ZIP or use the sample show.")
     else:
-        stamp = time.strftime("%Y%m%d_%H%M%S")
         short_mode = "ai" if mode == "AI assisted" else "basic"
-        run_dir = OUTPUT_ROOT / f"{short_mode}_{stamp}"
-        bar = st.progress(0.0, text="Starting")
+        job = {"run_dir": str(new_run_dir(OUTPUT_ROOT, short_mode)), "mode": short_mode, "source": str(source_path),
+               "episodes": sorted(selection) if selection else None, "fresh": fresh}
 
-        def show_progress(done: int, total: int, label: str) -> None:
-            bar.progress(min(done / max(total, 1), 1.0), text=label)
+if job:
+    run_dir = Path(job["run_dir"])
+    st.session_state["resumable"] = job
+    if run_dir.name not in my_runs:
+        my_runs.append(run_dir.name)
+    bar = st.progress(0.0, text="Starting")
 
-        try:
-            if short_mode == "basic":
-                summary = run_basic_pipeline(source_path, run_dir, on_progress=show_progress)
-            else:
-                summary = run_ai_pipeline(source_path, run_dir, use_cache=not fresh, cache_dir=OUTPUT_ROOT / "llm_cache",
-                                          on_progress=show_progress, only_episodes=selection, env_values=settings)
-            bar.empty()
-            st.session_state["current_run"] = str(run_dir)
-            if summary.get("stopped_because"):
-                st.warning(f"The run stopped early: {summary['stopped_because']} Saved progress is kept.")
-            elif summary.get("complete") is False:
-                st.warning("The run finished with some failures. See the processing summary below.")
-            else:
-                st.success(f"Finished in {summary['processing_seconds']} seconds.")
-        except ScreenplayPackError as error:
-            bar.empty()
-            st.error(f"Could not read this pack. {error}")
-        except LLMError as error:
-            bar.empty()
-            if run_dir.exists():
-                shutil.rmtree(run_dir, ignore_errors=True)
-            st.error(f"AI assisted mode could not start. {error.detail}")
+    def show_progress(done: int, total: int, label: str) -> None:
+        bar.progress(min(done / max(total, 1), 1.0), text=label)
+
+    try:
+        if job["mode"] == "basic":
+            summary = run_basic_pipeline(job["source"], run_dir, on_progress=show_progress)
+        else:
+            summary = run_ai_pipeline(job["source"], run_dir, use_cache=not job["fresh"], cache_dir=OUTPUT_ROOT / "llm_cache",
+                                      on_progress=show_progress, only_episodes=set(job["episodes"]) if job["episodes"] else None,
+                                      env_values=settings)
+        bar.empty()
+        st.session_state["current_run"] = str(run_dir)
+        if summary.get("stopped_because"):
+            st.warning(f"The run stopped early: {summary['stopped_because']} Saved progress is kept: use Resume unfinished run "
+                       "in the sidebar to continue it.")
+        elif summary.get("complete") is False:
+            st.warning("The run finished with some failures. See the processing summary below. Resume unfinished run retries them.")
+        else:
+            st.session_state.pop("resumable", None)
+            st.success(f"Finished in {summary['processing_seconds']} seconds.")
+    except ScreenplayPackError as error:
+        bar.empty()
+        st.session_state.pop("resumable", None)
+        st.error(f"Could not read this pack. {error}")
+    except LLMError as error:
+        bar.empty()
+        st.session_state.pop("resumable", None)
+        if run_dir.exists():
+            shutil.rmtree(run_dir, ignore_errors=True)
+        st.error(f"AI assisted mode could not start. {error.detail}")
+
+unfinished = st.session_state.get("resumable")
+if unfinished:
+    with resume_slot:
+        st.caption(f"Unfinished run: {Path(unfinished['run_dir']).name}. Resume continues it in the same folder and "
+                   "skips the episodes already done.")
+        st.button("Resume unfinished run", use_container_width=True, on_click=resume_run)
 
 run_to_show = None
 if chosen_run == YOUR_LATEST_RUN:
@@ -484,8 +537,10 @@ if promos:
                "is temporary and is wiped when the app restarts or sleeps, so download your reviews to keep them.")
     if blind:
         st.caption("Turn off blind review mode to compare human and AI ratings. The download below holds your reviews only, no AI figures.")
-        st.download_button("My reviews (JSON)", json.dumps([record.model_dump(exclude={"promo_id"}) for record in latest.values()], indent=2, ensure_ascii=False),
-                           file_name=f"human_reviews_{run_to_show.name}_blind.json", disabled=not latest)
+        # Only this reviewer's reviews: other people's ratings must not reach a blind reviewer.
+        own = reviews_of(latest, reviewer)
+        st.download_button("My reviews (JSON)", json.dumps([record.model_dump(exclude={"promo_id"}) for record in own], indent=2, ensure_ascii=False),
+                           file_name=f"human_reviews_{run_to_show.name}_blind.json", disabled=not own)
     else:
         st.subheader("Human review compared with AI")
         rows = comparison_rows(promos, run_to_show, method, latest)

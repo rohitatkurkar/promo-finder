@@ -242,6 +242,30 @@ Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on
 - **Tests:** 243 passed (4 new app tests): the final run opens by default, every bundled run opens with its own results and evaluations, a new run is shown and the final run can be reopened, and a bundled run can be reviewed without changing its files.
 - **Hosted storage:** reviews and runs saved on the hosted app are lost on restart, after 12 hours asleep, and on every redeploy. They are shared by everyone using the app.
 
+## 4f. Sidebar, clip transcripts, open AI mode, Next clip fix (2026-11-09)
+
+**Pushed: commits `32c8b6b` and `1324df8`.**
+
+- **Sidebar:** Existing runs first, then Human review, then a folded "Run on a new screenplay pack".
+- **Transcripts:** each bundled run has `transcripts.json`, the cues inside each recommended clip only (`tools/build_transcript_excerpts.py`).
+- **AI mode:** the access password is removed (this replaces the access control in 4d). Hosted runs keep the `AI_MAX_EPISODES` limit.
+- **Next clip:** no longer crashes after blind mode changes the clip labels.
+
+## 4g. Phase 1 hardening, no new services (2026-11-09)
+
+**Done and tested locally. Not committed.** Follows the architecture audit; nothing in discovery, prompts, scoring or ranking changed.
+
+- **Uploads** (new `promo_finder/uploads.py`): written once per content into `<temp>/promo_upload_<hash>/`, not once per page refresh; upload folders unused for a day are deleted. A crafted file name cannot leave the folder.
+- **Run folders:** named `<mode>_<date>_<time>_<random>`, so two runs started in the same second no longer share one.
+- **ZIP limits** (`parser.check_zip_limits`, checked before anything is unpacked): at most 500 files, 2 MB per file and 50 MB in total once unpacked. The real pack is 51 files and 0.5 MB.
+- **Blind export:** "My reviews (JSON)" now holds only the current reviewer's reviews (`reviews.reviews_of`). It used to include every reviewer's.
+- **Shared host:** when Streamlit secrets exist (the hosted app), "Existing runs" lists the bundled runs and only the runs made in this browser session, labelled "Your run". `PROMO_SHARED_HOST=1` or `0` overrides. Locally nothing changes.
+- **Resume:** a run that stopped (rate limit, failures) or was interrupted keeps a "Resume unfinished run" button in the new-run section. It continues in the same folder from the checkpoints, with the same pack and episodes. It lasts for the browser session only.
+- **Docs:** `.env.example` no longer mentions the removed password.
+- **Tests:** 266 passed. New: upload storage and clean-up, crafted names, unique run folders, the three ZIP limits, the blind export filter, runs hidden on a shared host, resume in the same folder, resume refused when the pack is gone.
+- **Browser check:** a ZIP put in the uploader ran Basic mode to results, its clips' screenplay showed, and several refreshes left one upload copy.
+- **Still open (later phases):** hosted runs and reviews are still lost on restart; reviews are still shared by every visitor and reviewer names are not checked.
+
 ## 5. Two segment promos
 
 Existing pieces (`schema.py`):
