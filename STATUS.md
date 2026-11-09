@@ -217,7 +217,14 @@ Also noticed: on 2026-11-08 at 21:53 an AI run was started from the interface on
 
 ## 4e. Genuine runs in the public demo (2026-11-09)
 
-**Done and tested locally. Not pushed: waiting for approval, because it publishes screenplay excerpts.**
+**Done, approved, pushed (commit `8f28b15`) and tested on the live app after a reboot.** It publishes screenplay excerpts, by decision.
+
+- **Live check (2026-11-09):**
+  - the app opens on the final run (50 of 50 episodes, 33 promos, 0 verification errors);
+  - the dropdown lists exactly the three runs;
+  - the Episode 1 trial (1 of 50, 2 promos) and the sample show (3 of 3, with full transcript) open with their own results;
+  - the AI runs show the "not published" transcript note;
+  - the review form appears (no test review was saved, because hosted storage is shared).
 
 - **Bundled in `demo_runs/`:**
   - the final AI run on all 50 episodes (`ai_full_50_groq_v2_2026-11-09`, 33 promos), which opens by default;
