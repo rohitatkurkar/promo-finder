@@ -174,3 +174,17 @@ def test_a_run_regenerated_after_review_is_flagged(basic_run):
     latest = latest_reviews(load_reviews(review_store_path(run_dir.parent))[0], run_dir.name)
     rows = comparison_rows(promos, run_dir, "basic", latest, include_unreviewed=False)
     assert rows[0]["run_changed_since_review"] is True
+
+
+def test_next_and_previous_move_from_the_clip_shown_even_if_the_selectbox_value_is_stale():
+    # Regression: Next clip crashed with "ValueError: list.index(x): x not in list" after blind mode was turned off,
+    # because the browser sent back the clip's old (blind) label. Navigation now starts from the clip shown on screen,
+    # and a label that is not listed can no longer crash it.
+    from promo_finder.reviews import step_clip
+    options = ["1. P0001 (Episode 1)", "2. P0002 (Episode 11)", "3. P0003 (Episode 24)"]
+    assert step_clip(options, options[0], 1) == options[1]
+    assert step_clip(options, options[0], -1) == options[2]  # Wraps around.
+    assert step_clip(options, options[2], 1) == options[0]
+    stale = "Episode 2, 01:03.50 to 01:36.80"  # A blind-mode label, not in the current list.
+    assert step_clip(options, stale, 1) == options[1]
+    assert step_clip(options, None, -1) == options[2]

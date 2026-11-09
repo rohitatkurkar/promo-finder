@@ -146,6 +146,12 @@ def latest_reviews(records: list[HumanReviewRecord], run_id: str | None = None) 
     return latest
 
 
+def step_clip(options: list[str], shown: str | None, delta: int) -> str:
+    """The clip label `delta` places from the one shown, wrapping around. Starts from the first if `shown` is not listed."""
+    position = options.index(shown) if shown in options else 0
+    return options[(position + delta) % len(options)]
+
+
 def review_by(latest: dict, run_id: str, clip_key: str, reviewer: str) -> HumanReviewRecord | None:
     return latest.get((run_id, clip_key, _reviewer_key(reviewer)))
 

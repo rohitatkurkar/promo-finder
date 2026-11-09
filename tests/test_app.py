@@ -398,3 +398,15 @@ def test_default_run_setting_opens_that_run(app, monkeypatch):
     app.run()
     assert _open_run_box(app).value == trial["label"]
     assert app.metric[0].value == "1 of 50"
+
+
+
+def test_next_and_previous_still_work_after_blind_mode_is_turned_off(app):
+    app.run()
+    next(b for b in app.button if b.label == "Next clip ▶").click().run()
+    app.checkbox(key="blind_review").check().run()
+    app.checkbox(key="blind_review").uncheck().run()
+    for button, expected in (("Next clip ▶", "Clip 2 of 33"), ("◀ Previous clip", "Clip 1 of 33"), ("◀ Previous clip", "Clip 33 of 33")):
+        next(b for b in app.button if b.label == button).click().run()
+        assert not app.exception
+        assert any(item.value == expected for item in app.caption), button

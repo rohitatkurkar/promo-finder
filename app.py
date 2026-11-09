@@ -30,6 +30,7 @@ from promo_finder.reviews import (
     review_store_path,
     rows_to_csv,
     rows_to_json,
+    step_clip,
 )
 
 ROOT = Path(__file__).resolve().parent
@@ -366,13 +367,15 @@ if promos:
         st.session_state.pop("clip_choice", None)
 
     def step(delta: int) -> None:
-        current = st.session_state.get("clip_choice", options[0])
-        st.session_state["clip_choice"] = options[(options.index(current) + delta) % len(options)]
+        # Move from the clip shown in the last run, which always belongs to `options`. The selectbox's own value can be
+        # stale: after blind mode changes the clip labels, the browser may send the old label back with the click.
+        st.session_state["clip_choice"] = step_clip(options, st.session_state.get("clip_shown"), delta)
 
     nav = st.columns([1, 1, 3])
     nav[0].button("◀ Previous clip", on_click=step, args=(-1,), use_container_width=True)
     nav[1].button("Next clip ▶", on_click=step, args=(1,), use_container_width=True)
     selected = labels[st.selectbox("Choose a clip", options, key="clip_choice")]
+    st.session_state["clip_shown"] = clip_label(selected, blind)
     nav[2].caption(f"Clip {options.index(clip_label(selected, blind)) + 1} of {len(options)}")
     segment = selected["segments"][0]
     if blind:
