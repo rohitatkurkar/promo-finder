@@ -150,6 +150,26 @@ Before the first real run, the user should know:
   - 5 recommended clips have high spoiler risk and 9 medium. The penalty lowers their score but does not remove them.
 - Not yet reviewed by a person.
 
+## 4b3. Full AI run v2, with the cut-off fix (2026-11-09)
+
+**Experiment, complete. This is now the current full result.** It is in `private/runs/ai_full_50_groq_v2_2026-11-09/`. The first full run is kept unchanged for comparison.
+
+- **Fixes** (`llm_client.py`, commits `189a81b` and `0d17e2e`): a reply cut off at the output limit is asked again once with double the room. This covers both a cut-off reply that still parses and Groq's HTTP 400 `json_validate_failed` "max completion tokens reached" error. The discarded attempt is logged as `cut_off` with its tokens. 5 new tests; 240 passed.
+- **Method:**
+  - The cache was seeded with the first run's 162 good replies, leaving out the 7 cut-off finder replies. The other 43 episodes' finder results and every shared evaluation are byte identical to the first run.
+  - The run was resumed twice: once after the fix for Groq's error route (Episode 5), and once to retry a finalist batch that failed on a brief internet outage. The earlier finalist file is kept as `finalist_review_with_failed_batch.json`.
+- **Coverage:** 50 of 50 episodes, complete, 0 verification errors.
+  - All 7 re-asked episodes now have 5 hooks and 5 endings.
+  - Six needed the bigger output room; Episode 13 did not, as it succeeded on its first try this time.
+- **Results:**
+  - 105 candidates (was 87). 33 recommended (was 26): the same 26 plus 7 new ones, from episodes 5, 13, 45 and 46. Episodes 17, 36 and 49 produced candidates, but every one failed the hook test.
+  - 22 of 50 episodes now have a recommendation (was 18).
+  - Rejected candidates: 72 (71 weak hooks, 1 ending that settles the conflict).
+  - First post unchanged: Episode 1, 00:39.00 to 01:19.00.
+- **Usage in this folder:** 48 live calls including 8 discarded attempts, 162 reused from the cache, 92,195 tokens, ₹0.
+- **New finding: spoiler judgements depend on the batch.** Re-reviewing finalists in different batches changed the spoiler risk of 5 of the 26 clips both runs share, for example high to medium, and with it their rank. The finalist review is not stable when the same clip is seen alongside different clips.
+- Ratings still barely separate the clips: all 33 hooks are 4 of 5, and the endings are 29 at 4 and 4 at 5.
+
 ## 4c. Human review in the interface (2026-11-08)
 
 **Done and tested** (automated tests, plus a check by hand in the running app on the invented sample show).
