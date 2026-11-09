@@ -283,6 +283,38 @@ def test_cut_off_twice_keeps_the_second_reply_and_records_why():
     assert ledger.records[-1]["status"] == "ok" and ledger.records[-1]["finish_reason"] == "length"
 
 
+def test_provider_error_for_running_out_of_room_is_asked_again_with_more_room():
+    """Groq's JSON mode can answer HTTP 400 json_validate_failed when the output limit is reached."""
+    seen = []
+    body = ('{"error":{"message":"Failed to generate JSON.","type":"invalid_request_error","code":"json_validate_failed",'
+            '"failed_generation":"max completion tokens reached before generating a valid document"}}')
+
+    def transport(url, headers=None, json=None, timeout=None):  # noqa: A002
+        seen.append(json["max_tokens"])
+        if len(seen) == 1:
+            return FakeResponse(400, text=body)
+        return ok_reply('{"hook_events": [], "ending_events": []}')
+
+    ledger = UsageLedger()
+    result = LLMClient(config(max_output_tokens=2000), ledger=ledger, transport=transport, sleep=lambda _: None).chat_json("s", "u", "p", "v1")
+    assert result.data == {"hook_events": [], "ending_events": []}
+    assert seen == [2000, 4000]
+    assert ledger.records[0]["error_kind"] == "cut_off"
+
+
+def test_other_json_failures_still_get_the_reminder_retry():
+    seen = []
+
+    def transport(url, headers=None, json=None, timeout=None):  # noqa: A002
+        seen.append((json["max_tokens"], json["messages"][1]["content"].endswith("Reply with only one JSON object.")))
+        if len(seen) == 1:
+            return FakeResponse(400, text='{"error":{"code":"json_validate_failed","failed_generation":"{bad"}}')
+        return ok_reply('{"a": 1}')
+
+    LLMClient(config(max_output_tokens=2000), transport=transport, sleep=lambda _: None).chat_json("s", "u", "p", "v1")
+    assert seen == [(2000, False), (2000, True)]
+
+
 def test_a_complete_reply_is_not_asked_again():
     seen = []
 

@@ -413,6 +413,16 @@ class LLMClient:
             if status == 400:
                 text = response.text or ""
                 lowered = text.lower()
+                if "json_validate_failed" in lowered and "max completion tokens" in lowered and not length_retry_used:
+                    # Groq's JSON mode reports running out of output room as an error instead of a cut-off reply.
+                    self.ledger.add({**base_record, "cached": False, "status": "failed", "error_kind": "cut_off",
+                                     "error_detail": "Provider ran out of output room before the JSON was complete; asked again with more room",
+                                     "input_tokens": None, "output_tokens": None,
+                                     "latency_seconds": round(self.clock() - started, 2), "attempts": attempts})
+                    last_error = LLMError("cut_off", "The reply ran out of output room twice")
+                    length_retry_used = True
+                    output_limit = self.config.max_output_tokens * 2
+                    continue
                 if "json_validate_failed" in lowered and not json_retry_used:
                     json_retry_used = True
                     last_error = LLMError("invalid_json", "Provider could not produce valid JSON")
